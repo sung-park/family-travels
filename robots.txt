@@ -1,0 +1,4 @@
+# Family travel site — public but not meant for search ranking.
+# Soft measure only; repo content remains world-readable if the repo is public.
+User-agent: *
+Disallow: /
