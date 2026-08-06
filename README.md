@@ -24,13 +24,17 @@ npm run check   # Astro 타입 체크
 
 ## 배포
 
-`main` 브랜치에 push하면 [GitHub Actions](.github/workflows/deploy-pages.yml)가 빌드 후 Pages에 배포합니다.
+`main` 브랜치에 push하면 [GitHub Actions](.github/workflows/deploy-pages.yml)가 `dist/`를 **`gh-pages` 브랜치**에 올리고, GitHub Pages가 그 브랜치를 서빙합니다.
 
-1. 저장소 **Settings → Pages → Build and deployment → Source: GitHub Actions** (최초 1회)
-2. `main`에 push 또는 Actions 탭에서 **Deploy to GitHub Pages** 수동 실행
-3. 수 분 후 라이브 URL 확인: https://sung-park.github.io/family-travels/
+1. 저장소 **Settings → Pages → Build and deployment**
+   - Source: **Deploy from a branch**
+   - Branch: **`gh-pages`** / **`/` (root)**
+2. `main`에 push 또는 Actions에서 **Deploy to GitHub Pages** 수동 실행
+3. 라이브: https://sung-park.github.io/family-travels/
 
-수용 기준: 라이브 URL **HTTP 200**, CSS 로드, 카톡 미리보기는 콘텐츠 추가 후 재확인.
+수용 기준: 라이브 URL **HTTP 200**, CSS 로드. 카톡 미리보기는 콘텐츠 추가 후 재확인.
+
+> 참고: 공식 `actions/deploy-pages` 경로가 `deployment_in_progress`에 걸리는 경우가 있어, 브랜치 배포로 우회합니다.
 
 ## 콘텐츠 규칙 (요약)
 

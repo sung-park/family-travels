@@ -1,5 +1,6 @@
-# Build Astro static site and deploy to GitHub Pages.
-# Repo settings → Pages → Source: GitHub Actions (required once).
+# Build Astro and publish dist/ to the gh-pages branch.
+# Pages source must be: Deploy from a branch → gh-pages / (root)
+# Avoids actions/deploy-pages which can hang on "deployment_in_progress".
 name: Deploy to GitHub Pages
 
 on:
@@ -8,16 +9,14 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: pages
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -38,18 +37,11 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Publish to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          force_orphan: true
+          # Keep project-site URL working for assets under /family-travels/
+          enable_jekyll: false
