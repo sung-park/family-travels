@@ -1,0 +1,62 @@
+---
+/**
+ * Shared <head> meta: charset, viewport, OG for KakaoTalk previews.
+ * Per-trip pages can pass title/description/image overrides.
+ */
+import { withBase } from "../lib/paths";
+
+interface Props {
+  title: string;
+  description?: string;
+  /** Absolute or site-root path; resolved against Astro.site when relative */
+  image?: string;
+  /** Canonical path under site (e.g. "/" or "/trips/2026-nha-trang/") */
+  path?: string;
+  noIndex?: boolean;
+}
+
+const {
+  title,
+  description = "시온이 중심 우리 가족 여행 일정 · 숙소 · 교통 공유",
+  image,
+  path = "/",
+  noIndex = false,
+} = Astro.props;
+
+const site = Astro.site ?? new URL("https://sung-park.github.io");
+const canonicalPath = withBase(path === "/" ? "/" : path);
+const canonicalUrl = new URL(canonicalPath, site).href;
+const defaultOgImage = new URL(withBase("favicon.svg"), site).href;
+const ogImage = image
+  ? image.startsWith("http")
+    ? image
+    : new URL(image.startsWith("/") ? image : withBase(image), site).href
+  : defaultOgImage;
+
+const faviconSvg = withBase("favicon.svg");
+const faviconIco = withBase("favicon.ico");
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="generator" content={Astro.generator} />
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonicalUrl} />
+{noIndex && <meta name="robots" content="noindex, nofollow" />}
+
+<!-- Open Graph (KakaoTalk link preview) -->
+<meta property="og:type" content="website" />
+<meta property="og:locale" content="ko_KR" />
+<meta property="og:site_name" content="우리 가족 여행" />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonicalUrl} />
+<meta property="og:image" content={ogImage} />
+
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+
+<link rel="icon" type="image/svg+xml" href={faviconSvg} />
+<link rel="icon" href={faviconIco} />

@@ -1,0 +1,50 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="소개 · 우리 가족 여행"
+  description="시온이 중심 가족 여행 사이트 소개와 공개 범위 안내"
+  path="/about/"
+>
+  <article class="prose-family space-y-5">
+    <h1 class="text-2xl font-bold text-ink">이 사이트에 대하여</h1>
+
+    <section class="space-y-2">
+      <h2 class="text-lg font-semibold text-ink">무엇을 위한 곳인가요?</h2>
+      <p class="text-ink">
+        시온이와 양가 할아버지 할머니, 엄마 아빠가 함께 떠나는 여행의
+        <strong>일정 · 숙소 · 교통 · 연락처</strong>를 한 화면에서 보고 공유하기
+        위한 공간입니다.
+      </p>
+    </section>
+
+    <section class="space-y-2">
+      <h2 class="text-lg font-semibold text-ink">누가 고치나요?</h2>
+      <p class="text-ink">
+        가족 모두는 링크로 읽기만 하시면 됩니다. 일정 수정은 기술 담당(부모)이
+        git / 마크다운으로 업데이트한 뒤 자동 배포합니다.
+      </p>
+    </section>
+
+    <section class="space-y-2">
+      <h2 class="text-lg font-semibold text-ink">무엇이 공개되나요?</h2>
+      <ul class="list-inside list-disc space-y-1 text-ink">
+        <li>여행 날짜, 도시, 당일 일정 요약, 숙소 이름·대략 위치</li>
+        <li>항공·이동 시각(확정분), 공개 링크(대사관 안내 등)</li>
+      </ul>
+      <p class="text-sm text-muted">
+        예약 확인 번호, PNR, 여권 번호 등 민감 정보는 사이트에 올리지 않습니다.
+        로컬 전용 메모 파일로만 관리합니다.
+      </p>
+    </section>
+
+    <section class="space-y-2">
+      <h2 class="text-lg font-semibold text-ink">아직 정해지지 않은 것</h2>
+      <p class="text-ink">
+        확정 전 항목은 제목에 <code class="rounded bg-brand-50 px-1.5 py-0.5 text-sm text-brand-800">(TBD)</code> 로
+        표시합니다.
+      </p>
+    </section>
+  </article>
+</BaseLayout>

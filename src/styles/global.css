@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+/* Family-travels base: Korean mobile-first, large type, reduced motion */
+@theme {
+  --font-sans: "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
+    ui-sans-serif, system-ui, sans-serif;
+  --color-brand-50: #f0f9ff;
+  --color-brand-100: #e0f2fe;
+  --color-brand-600: #0284c7;
+  --color-brand-700: #0369a1;
+  --color-brand-800: #075985;
+  --color-ink: #0f172a;
+  --color-muted: #64748b;
+  --color-surface: #ffffff;
+  --color-canvas: #f8fafc;
+  --color-border: #e2e8f0;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  body {
+    @apply min-h-dvh bg-canvas font-sans text-ink antialiased;
+    font-size: 17px;
+    line-height: 1.6;
+  }
+
+  a {
+    @apply text-brand-700 underline-offset-2 hover:underline;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-600;
+  }
+}

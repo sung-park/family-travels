@@ -1,0 +1,39 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="우리 가족 여행"
+  description="시온이 중심 우리 가족 여행 일정 · 숙소 · 교통 공유"
+  path="/"
+>
+  <section class="space-y-4">
+    <div>
+      <h1 class="text-2xl font-bold tracking-tight text-ink">
+        우리 가족 여행
+      </h1>
+      <p class="mt-2 text-muted">
+        시온이를 중심으로, 양가 할아버지 할머니와 엄마 아빠가 함께 떠나는
+        여행 일정을 한곳에 모아요.
+      </p>
+    </div>
+
+    <div
+      class="rounded-2xl border border-border bg-surface p-5 shadow-sm"
+      role="status"
+    >
+      <p class="text-sm font-medium text-brand-700">곧 여기에 여행이 보여요</p>
+      <p class="mt-2 text-base text-ink">
+        첫 여행은
+        <strong class="font-semibold">2026년 9월 3일 ~ 9일 · 베트남 나트랑</strong>
+        입니다. 일정·숙소 페이지를 준비 중이에요.
+      </p>
+    </div>
+
+    <ul class="list-inside list-disc space-y-1 text-sm text-muted">
+      <li>다가오는 여행 · 지금 여행 중 · 지난 여행</li>
+      <li>당일 일정과 오늘 밤 숙소를 제일 위에</li>
+      <li>예약번호·여권 정보는 사이트에 올리지 않아요</li>
+    </ul>
+  </section>
+</BaseLayout>
