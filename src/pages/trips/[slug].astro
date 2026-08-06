@@ -1,0 +1,223 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DayTimeline from "../../components/DayTimeline.astro";
+import LodgingCard from "../../components/LodgingCard.astro";
+import ParticipantChips from "../../components/ParticipantChips.astro";
+import TodayHighlight from "../../components/TodayHighlight.astro";
+import TransportList from "../../components/TransportList.astro";
+import {
+  formatDateRangeKo,
+  getTravelPhase,
+  phaseLabelKo,
+  todayInTimeZone,
+} from "../../lib/dates";
+import { getPeopleMap } from "../../lib/people";
+import { getAllTripBundles, getTripBundle } from "../../lib/trip";
+
+export async function getStaticPaths() {
+  const bundles = await getAllTripBundles();
+  return bundles.map((b) => ({
+    params: { slug: b.slug },
+  }));
+}
+
+const { slug } = Astro.params;
+if (!slug) throw new Error("missing slug");
+
+const bundle = await getTripBundle(slug);
+if (!bundle) {
+  return Astro.redirect("../../");
+}
+
+const { trip, days, people, body } = bundle;
+const peopleById = getPeopleMap();
+const today = todayInTimeZone(trip.timezone);
+const phase = getTravelPhase(trip.startDate, trip.endDate, today);
+const dateRange = formatDateRangeKo(trip.startDate, trip.endDate);
+const emergency = trip.links.filter((l) => l.kind === "emergency");
+const otherLinks = trip.links.filter((l) => l.kind !== "emergency");
+const description =
+  trip.summary?.split("\n")[0]?.trim() ||
+  `${trip.title} · ${dateRange} · ${trip.destination.cityKo}`;
+---
+
+<BaseLayout
+  title={`${trip.title} · 우리 가족 여행`}
+  description={description}
+  path={`/trips/${slug}/`}
+>
+  <article class="space-y-8">
+    <header class="space-y-3">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-medium text-brand-800">
+          {phaseLabelKo(phase)}
+        </span>
+        {
+          trip.status === "planned" && (
+            <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">
+              예약 진행 중
+            </span>
+          )
+        }
+      </div>
+      <h1 class="text-2xl font-bold tracking-tight text-ink">{trip.title}</h1>
+      <p class="text-base text-ink">{dateRange}</p>
+      <p class="text-sm text-muted">
+        {trip.destination.cityKo}, {trip.destination.countryKo}
+      </p>
+      {
+        trip.summary && (
+          <p class="whitespace-pre-line text-sm leading-relaxed text-muted">
+            {trip.summary}
+          </p>
+        )
+      }
+    </header>
+
+    <TodayHighlight trip={trip} days={days} />
+
+    <section class="space-y-3" aria-labelledby="sec-people">
+      <h2 id="sec-people" class="text-lg font-semibold text-ink">
+        함께하는 가족
+      </h2>
+      <ParticipantChips people={people} focusPersonId={trip.focusPersonId} />
+      <ul class="text-sm text-muted">
+        {
+          people.map((p) => (
+            <li>
+              {p.nameShort}
+              {p.nameKo !== p.nameShort && (
+                <span class="text-muted"> ({p.nameKo})</span>
+              )}
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    {
+      trip.lodgings.length > 0 && (
+        <section class="space-y-3" aria-labelledby="sec-lodging">
+          <h2 id="sec-lodging" class="text-lg font-semibold text-ink">
+            숙소
+          </h2>
+          {trip.lodgings.map((l, i) => (
+            <LodgingCard lodging={l} highlight={i === 0 && phase === "during"} />
+          ))}
+        </section>
+      )
+    }
+
+    {
+      trip.transports.length > 0 && (
+        <section class="space-y-3" aria-labelledby="sec-transport">
+          <h2 id="sec-transport" class="text-lg font-semibold text-ink">
+            교통
+          </h2>
+          <TransportList transports={trip.transports} />
+        </section>
+      )
+    }
+
+    {
+      days.length > 0 && (
+        <section class="space-y-3" aria-labelledby="sec-days">
+          <h2 id="sec-days" class="text-lg font-semibold text-ink">
+            일별 일정
+          </h2>
+          <DayTimeline days={days} trip={trip} peopleById={peopleById} />
+        </section>
+      )
+    }
+
+    {
+      trip.packing.length > 0 && (
+        <section class="space-y-2" aria-labelledby="sec-pack">
+          <h2 id="sec-pack" class="text-lg font-semibold text-ink">
+            준비물
+          </h2>
+          <ul class="list-inside list-disc space-y-1 text-sm text-ink">
+            {trip.packing.map((p) => (
+              <li>
+                {p.item}
+                {p.essential && (
+                  <span class="text-brand-700"> (필수)</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    {
+      (emergency.length > 0 || otherLinks.length > 0) && (
+        <section class="space-y-2" aria-labelledby="sec-links">
+          <h2 id="sec-links" class="text-lg font-semibold text-ink">
+            링크
+          </h2>
+          <ul class="space-y-2 text-sm">
+            {emergency.map((l) => (
+              <li>
+                <a
+                  href={l.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="font-semibold text-brand-800"
+                >
+                  [긴급] {l.label}
+                </a>
+              </li>
+            ))}
+            {otherLinks.map((l) => (
+              <li>
+                <a
+                  href={l.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-brand-700"
+                >
+                  {l.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    {
+      trip.notesPublic.length > 0 && (
+        <section class="space-y-2" aria-labelledby="sec-notes">
+          <h2 id="sec-notes" class="text-lg font-semibold text-ink">
+            메모
+          </h2>
+          <ul class="list-inside list-disc space-y-1 text-sm text-ink">
+            {trip.notesPublic.map((n) => (
+              <li>{n}</li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    {
+      body?.trim() && (
+        <section class="space-y-2 text-sm leading-relaxed text-muted">
+          {body
+            .trim()
+            .split(/\n+/)
+            .map((para) => (
+              <p>{para}</p>
+            ))}
+        </section>
+      )
+    }
+
+    {
+      trip.updatedAt && (
+        <p class="text-xs text-muted">업데이트: {trip.updatedAt}</p>
+      )
+    }
+  </article>
+</BaseLayout>

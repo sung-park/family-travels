@@ -1,0 +1,70 @@
+---
+import { formatDateTimeKo } from "../lib/dates";
+import type { Transport } from "../lib/schemas";
+
+interface Props {
+  transports: Transport[];
+}
+
+const { transports } = Astro.props;
+
+function leg(t: Transport) {
+  const fromCode = t.from.code ? ` ${t.from.code}` : "";
+  const toCode = t.to.code ? ` ${t.to.code}` : "";
+  return {
+    route: `${t.from.name}${fromCode} → ${t.to.name}${toCode}`,
+    depart: formatDateTimeKo(t.departAt),
+    arrive: formatDateTimeKo(t.arriveAt),
+  };
+}
+---
+
+<div class="space-y-3">
+  {
+    transports.map((t) => {
+      const { route, depart, arrive } = leg(t);
+      return (
+        <article class="rounded-2xl border border-border bg-surface p-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h3 class="text-base font-bold text-ink">{t.label}</h3>
+            {t.type === "flight" && (
+              <span class="rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-800">
+                항공
+              </span>
+            )}
+          </div>
+          <p class="mt-2 text-sm font-medium text-ink">{route}</p>
+          {(t.operator || t.flightNumber) && (
+            <p class="mt-1 text-sm text-muted">
+              {[t.operator, t.flightNumber].filter(Boolean).join(" · ")}
+              {t.cabin ? ` · ${t.cabin}` : ""}
+            </p>
+          )}
+          <dl class="mt-3 space-y-2 text-sm">
+            <div>
+              <dt class="text-muted">출발</dt>
+              <dd class="text-lg font-semibold tabular-nums text-ink">
+                {depart.time}
+                <span class="ml-2 text-sm font-normal text-muted">
+                  {depart.date}
+                </span>
+              </dd>
+            </div>
+            <div>
+              <dt class="text-muted">도착</dt>
+              <dd class="text-lg font-semibold tabular-nums text-ink">
+                {arrive.time}
+                <span class="ml-2 text-sm font-normal text-muted">
+                  {arrive.date}
+                </span>
+              </dd>
+            </div>
+          </dl>
+          {t.notesPublic && (
+            <p class="mt-3 text-sm text-muted">{t.notesPublic}</p>
+          )}
+        </article>
+      );
+    })
+  }
+</div>

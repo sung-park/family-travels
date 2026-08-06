@@ -1,0 +1,14 @@
+# 이 파일을 notes.private.local.yaml 로 복사해 로컬에서만 사용하세요.
+# **/*.private.local.yaml 은 gitignore — 절대 커밋하지 마세요.
+lodgings:
+  hotel-melia-vinpearl-cam-ranh:
+    confirmationCode: "EXAMPLE-NOT-REAL"
+    guestNameOnBooking: "HONG GILDONG"
+flights:
+  flight-ke467-out:
+    pnr: "EXAMPLE"
+  flight-ke468-return:
+    pnr: "EXAMPLE"
+koreanAir:
+  membershipNumbers: []
+passports: []

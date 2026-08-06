@@ -1,0 +1,211 @@
+---
+import {
+  daysUntilStart,
+  formatDateKo,
+  getTravelPhase,
+  todayInTimeZone,
+  tripDayIndex,
+} from "../lib/dates";
+import type { DayData, TripData } from "../lib/schemas";
+import { lodgingById } from "../lib/trip";
+
+interface Props {
+  trip: TripData;
+  days: DayData[];
+}
+
+const { trip, days } = Astro.props;
+const todayBuild = todayInTimeZone(trip.timezone);
+const phase = getTravelPhase(trip.startDate, trip.endDate, todayBuild);
+const focusDate =
+  phase === "pre"
+    ? trip.startDate
+    : phase === "post"
+      ? trip.endDate
+      : todayBuild;
+const day =
+  days.find((d) => d.date === focusDate) ??
+  days.find((d) => d.date === trip.startDate);
+const lodging = lodgingById(trip, day?.lodgingId);
+const dday = daysUntilStart(trip.startDate, todayBuild);
+const dayIdx = tripDayIndex(trip.startDate, trip.endDate, todayBuild);
+
+let headline = "";
+if (phase === "pre") {
+  headline = dday === 0 ? "오늘 출발" : `출발까지 D-${dday}`;
+} else if (phase === "during") {
+  headline = dayIdx ? `여행 ${dayIdx}일차 · 오늘` : "여행 중";
+} else {
+  headline = "여행이 끝났어요";
+}
+---
+
+<section
+  id="today-highlight"
+  class="rounded-2xl border-2 border-brand-600 bg-brand-50 p-4 shadow-sm"
+  data-start={trip.startDate}
+  data-end={trip.endDate}
+  data-tz={trip.timezone}
+  data-days={JSON.stringify(
+    days.map((d) => ({
+      date: d.date,
+      title: d.title,
+      summary: d.summary ?? "",
+      lodgingId: d.lodgingId ?? "",
+    })),
+  )}
+  data-lodgings={JSON.stringify(
+    Object.fromEntries(
+      trip.lodgings.map((l) => [l.id, { name: l.name, room: l.room ?? "" }]),
+    ),
+  )}
+>
+  <p class="text-xs font-semibold uppercase tracking-wide text-brand-800">
+    지금 볼 것
+  </p>
+  <p class="mt-1 text-xl font-bold text-ink" data-headline>{headline}</p>
+  {
+    day && (
+      <div class="mt-3 space-y-1" data-day-block>
+        <p class="text-sm text-muted" data-day-date>
+          {formatDateKo(day.date)}
+        </p>
+        <p class="font-semibold text-ink" data-day-title>
+          {day.title}
+        </p>
+        {day.summary && (
+          <p class="text-sm text-ink" data-day-summary>
+            {day.summary}
+          </p>
+        )}
+      </div>
+    )
+  }
+  {
+    lodging && (
+      <div class="mt-3 rounded-xl bg-surface/80 p-3" data-lodging-block>
+        <p class="text-xs font-medium text-muted">오늘 밤 숙소</p>
+        <p class="font-semibold text-ink" data-lodging-name>
+          {lodging.name}
+        </p>
+        {lodging.room && (
+          <p class="text-sm text-muted" data-lodging-room>
+            {lodging.room}
+          </p>
+        )}
+        <a
+          href={`#lodging-${lodging.id}`}
+          class="mt-2 inline-flex min-h-11 items-center text-sm font-medium text-brand-700"
+        >
+          숙소 상세로 이동
+        </a>
+      </div>
+    )
+  }
+  {
+    day && (
+      <a
+        href={`#day-${day.date}`}
+        class="mt-3 inline-flex min-h-11 items-center text-sm font-medium text-brand-700"
+        data-day-link
+      >
+        일정 위치로 이동
+      </a>
+    )
+  }
+</section>
+
+<script>
+  type DayLite = {
+    date: string;
+    title: string;
+    summary: string;
+    lodgingId: string;
+  };
+
+  function todayInTz(timeZone: string): string {
+    return new Intl.DateTimeFormat("en-CA", {
+      timeZone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date());
+  }
+
+  function formatDateKo(iso: string): string {
+    const [y, m, d] = iso.split("-").map(Number);
+    const dt = new Date(Date.UTC(y, m - 1, d));
+    const wd = ["일", "월", "화", "수", "목", "금", "토"][dt.getUTCDay()];
+    return `${y}년 ${m}월 ${d}일 (${wd})`;
+  }
+
+  const el = document.getElementById("today-highlight");
+  if (el) {
+    const start = el.dataset.start!;
+    const end = el.dataset.end!;
+    const tz = el.dataset.tz!;
+    const days = JSON.parse(el.dataset.days || "[]") as DayLite[];
+    const lodgings = JSON.parse(el.dataset.lodgings || "{}") as Record<
+      string,
+      { name: string; room: string }
+    >;
+    const today = todayInTz(tz);
+    let phase: "pre" | "during" | "post" = "pre";
+    if (today < start) phase = "pre";
+    else if (today > end) phase = "post";
+    else phase = "during";
+
+    const focus =
+      phase === "pre" ? start : phase === "post" ? end : today;
+    const day = days.find((d) => d.date === focus) ?? days[0];
+    const s = Date.parse(start + "T00:00:00Z");
+    const t = Date.parse(today + "T00:00:00Z");
+    const dday = Math.round((s - t) / 86400000);
+    const dayIdx =
+      today >= start && today <= end
+        ? Math.floor((t - s) / 86400000) + 1
+        : null;
+
+    const headline = el.querySelector("[data-headline]");
+    if (headline) {
+      if (phase === "pre") {
+        headline.textContent = dday === 0 ? "오늘 출발" : `출발까지 D-${dday}`;
+      } else if (phase === "during") {
+        headline.textContent = dayIdx
+          ? `여행 ${dayIdx}일차 · 오늘`
+          : "여행 중";
+      } else {
+        headline.textContent = "여행이 끝났어요";
+      }
+    }
+
+    if (day) {
+      const dateEl = el.querySelector("[data-day-date]");
+      const titleEl = el.querySelector("[data-day-title]");
+      const sumEl = el.querySelector("[data-day-summary]");
+      const link = el.querySelector<HTMLAnchorElement>("[data-day-link]");
+      if (dateEl) dateEl.textContent = formatDateKo(day.date);
+      if (titleEl) titleEl.textContent = day.title;
+      if (sumEl) {
+        if (day.summary) {
+          sumEl.textContent = day.summary;
+          (sumEl as HTMLElement).style.display = "";
+        } else {
+          (sumEl as HTMLElement).style.display = "none";
+        }
+      }
+      if (link) link.href = `#day-${day.date}`;
+
+      const lodging = day.lodgingId ? lodgings[day.lodgingId] : null;
+      const nameEl = el.querySelector("[data-lodging-name]");
+      const roomEl = el.querySelector("[data-lodging-room]");
+      if (lodging && nameEl) {
+        nameEl.textContent = lodging.name;
+        if (roomEl) {
+          roomEl.textContent = lodging.room;
+          (roomEl as HTMLElement).style.display = lodging.room ? "" : "none";
+        }
+      }
+    }
+  }
+</script>

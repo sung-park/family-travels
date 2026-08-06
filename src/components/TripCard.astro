@@ -1,0 +1,138 @@
+---
+import {
+  daysUntilStart,
+  formatDateRangeKo,
+  phaseLabelKo,
+  todayInTimeZone,
+  tripDayIndex,
+} from "../lib/dates";
+import type { TripBundle } from "../lib/trip";
+import { participantLabels } from "../lib/trip";
+import { withBase } from "../lib/paths";
+
+interface Props {
+  bundle: TripBundle;
+}
+
+const { bundle } = Astro.props;
+const { trip, slug, people, phaseAtBuild } = bundle;
+const href = withBase(`trips/${slug}/`);
+const dateRange = formatDateRangeKo(trip.startDate, trip.endDate);
+const who = participantLabels(people);
+
+// Build-time approximation; enhanced by client script below
+const todayBuild = todayInTimeZone(trip.timezone);
+const dday = daysUntilStart(trip.startDate, todayBuild);
+const dayIdx = tripDayIndex(trip.startDate, trip.endDate, todayBuild);
+---
+
+<article
+  class="trip-card rounded-2xl border border-border bg-surface p-5 shadow-sm"
+  data-start={trip.startDate}
+  data-end={trip.endDate}
+  data-tz={trip.timezone}
+  data-phase={phaseAtBuild}
+>
+  <a href={href} class="block no-underline text-inherit">
+    <div class="flex flex-wrap items-start justify-between gap-2">
+      <h2 class="text-xl font-bold text-ink">{trip.title}</h2>
+      <span
+        class="phase-badge inline-flex rounded-full bg-brand-50 px-2.5 py-1 text-xs font-medium text-brand-800"
+        data-phase-label
+      >
+        {phaseLabelKo(phaseAtBuild)}
+      </span>
+    </div>
+    <p class="mt-2 text-base text-ink">
+      {dateRange}
+    </p>
+    <p class="mt-1 text-sm text-muted">
+      {trip.destination.cityKo}, {trip.destination.countryKo}
+    </p>
+    <p class="relative-meta mt-2 text-sm font-medium text-brand-700" data-relative>
+      {
+        phaseAtBuild === "pre"
+          ? dday === 0
+            ? "오늘 출발"
+            : `출발까지 D-${dday}`
+          : phaseAtBuild === "during" && dayIdx
+            ? `여행 ${dayIdx}일차`
+            : phaseAtBuild === "post"
+              ? "다녀왔어요"
+              : ""
+      }
+    </p>
+    {
+      who && (
+        <p class="mt-3 text-sm text-muted">
+          <span class="sr-only">참가 </span>
+          {who}
+        </p>
+      )
+    }
+    {
+      trip.status === "planned" && (
+        <p class="mt-2 text-xs text-muted">예약·일정 일부 TBD</p>
+      )
+    }
+  </a>
+</article>
+
+<script>
+  function todayInTz(timeZone: string): string {
+    return new Intl.DateTimeFormat("en-CA", {
+      timeZone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date());
+  }
+
+  function phase(start: string, end: string, today: string) {
+    if (today < start) return "pre";
+    if (today > end) return "post";
+    return "during";
+  }
+
+  function phaseLabel(p: string) {
+    if (p === "pre") return "출발 전";
+    if (p === "during") return "여행 중";
+    return "여행 끝";
+  }
+
+  function dayIndex(start: string, end: string, today: string) {
+    if (today < start || today > end) return null;
+    const s = Date.parse(start + "T00:00:00Z");
+    const t = Date.parse(today + "T00:00:00Z");
+    return Math.floor((t - s) / 86400000) + 1;
+  }
+
+  function dday(start: string, today: string) {
+    const s = Date.parse(start + "T00:00:00Z");
+    const t = Date.parse(today + "T00:00:00Z");
+    return Math.round((s - t) / 86400000);
+  }
+
+  document.querySelectorAll<HTMLElement>(".trip-card").forEach((card) => {
+    const start = card.dataset.start!;
+    const end = card.dataset.end!;
+    const tz = card.dataset.tz!;
+    const today = todayInTz(tz);
+    const p = phase(start, end, today);
+    card.dataset.phase = p;
+    const badge = card.querySelector("[data-phase-label]");
+    if (badge) badge.textContent = phaseLabel(p);
+    const rel = card.querySelector("[data-relative]");
+    if (rel) {
+      if (p === "pre") {
+        const d = dday(start, today);
+        rel.textContent = d === 0 ? "오늘 출발" : `출발까지 D-${d}`;
+      } else if (p === "during") {
+        const i = dayIndex(start, end, today);
+        rel.textContent = i ? `여행 ${i}일차` : "여행 중";
+      } else {
+        rel.textContent = "다녀왔어요";
+      }
+    }
+  });
+</script>

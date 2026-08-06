@@ -1,0 +1,34 @@
+---
+import type { Person } from "../lib/schemas";
+
+interface Props {
+  people: Person[];
+  focusPersonId?: string;
+}
+
+const { people, focusPersonId } = Astro.props;
+---
+
+<ul class="flex flex-wrap gap-2" aria-label="참가자">
+  {
+    people.map((p) => {
+      const focus = p.isFocus || p.id === focusPersonId;
+      return (
+        <li>
+          <span
+            class:list={[
+              "inline-flex min-h-11 items-center rounded-full px-3 py-1.5 text-sm font-medium",
+              focus
+                ? "bg-brand-600 text-white"
+                : "bg-brand-50 text-brand-800",
+            ]}
+            title={p.nameKo}
+          >
+            {p.nameShort}
+            {focus && <span class="sr-only"> (중심)</span>}
+          </span>
+        </li>
+      );
+    })
+  }
+</ul>

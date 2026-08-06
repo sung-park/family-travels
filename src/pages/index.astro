@@ -1,5 +1,27 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import TripCard from "../components/TripCard.astro";
+import { getTravelPhase, todayInTimeZone } from "../lib/dates";
+import { getAllTripBundles } from "../lib/trip";
+
+const bundles = (await getAllTripBundles()).filter(
+  (b) => b.trip.status !== "idea" && b.trip.status !== "cancelled",
+);
+
+// Group by build-time phase; client script on cards updates labels.
+// Mid-trip: show under "지금 여행 중" when phaseAtBuild === during.
+const upcoming = bundles.filter((b) => {
+  const today = todayInTimeZone(b.trip.timezone);
+  return getTravelPhase(b.trip.startDate, b.trip.endDate, today) === "pre";
+});
+const ongoing = bundles.filter((b) => {
+  const today = todayInTimeZone(b.trip.timezone);
+  return getTravelPhase(b.trip.startDate, b.trip.endDate, today) === "during";
+});
+const past = bundles.filter((b) => {
+  const today = todayInTimeZone(b.trip.timezone);
+  return getTravelPhase(b.trip.startDate, b.trip.endDate, today) === "post";
+});
 ---
 
 <BaseLayout
@@ -7,33 +29,72 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   description="시온이 중심 우리 가족 여행 일정 · 숙소 · 교통 공유"
   path="/"
 >
-  <section class="space-y-4">
+  <section class="space-y-8">
     <div>
       <h1 class="text-2xl font-bold tracking-tight text-ink">
         우리 가족 여행
       </h1>
       <p class="mt-2 text-muted">
-        시온이를 중심으로, 양가 할아버지 할머니와 엄마 아빠가 함께 떠나는
-        여행 일정을 한곳에 모아요.
+        시온이를 중심으로 함께 떠나는 여행 일정·숙소·교통을 모아요.
       </p>
     </div>
 
-    <div
-      class="rounded-2xl border border-border bg-surface p-5 shadow-sm"
-      role="status"
-    >
-      <p class="text-sm font-medium text-brand-700">곧 여기에 여행이 보여요</p>
-      <p class="mt-2 text-base text-ink">
-        첫 여행은
-        <strong class="font-semibold">2026년 9월 3일 ~ 9일 · 베트남 나트랑</strong>
-        입니다. 일정·숙소 페이지를 준비 중이에요.
-      </p>
-    </div>
+    {
+      bundles.length === 0 && (
+        <div class="rounded-2xl border border-border bg-surface p-5">
+          <p class="text-ink">아직 등록된 여행이 없어요.</p>
+        </div>
+      )
+    }
 
-    <ul class="list-inside list-disc space-y-1 text-sm text-muted">
-      <li>다가오는 여행 · 지금 여행 중 · 지난 여행</li>
-      <li>당일 일정과 오늘 밤 숙소를 제일 위에</li>
-      <li>예약번호·여권 정보는 사이트에 올리지 않아요</li>
-    </ul>
+    {
+      ongoing.length > 0 && (
+        <section class="space-y-3" aria-labelledby="sec-ongoing">
+          <h2 id="sec-ongoing" class="text-lg font-semibold text-ink">
+            지금 여행 중
+          </h2>
+          {ongoing.map((b) => (
+            <TripCard bundle={b} />
+          ))}
+        </section>
+      )
+    }
+
+    {
+      upcoming.length > 0 && (
+        <section class="space-y-3" aria-labelledby="sec-upcoming">
+          <h2 id="sec-upcoming" class="text-lg font-semibold text-ink">
+            다가오는 여행
+          </h2>
+          {upcoming.map((b) => (
+            <TripCard bundle={b} />
+          ))}
+        </section>
+      )
+    }
+
+    {
+      past.length > 0 && (
+        <section class="space-y-3" aria-labelledby="sec-past">
+          <h2 id="sec-past" class="text-lg font-semibold text-ink">
+            지난 여행
+          </h2>
+          {past.map((b) => (
+            <TripCard bundle={b} />
+          ))}
+        </section>
+      )
+    }
+
+    {
+      bundles.length > 0 && upcoming.length === 0 && ongoing.length === 0 && past.length === 0 && (
+        <section class="space-y-3">
+          <h2 class="text-lg font-semibold text-ink">여행</h2>
+          {bundles.map((b) => (
+            <TripCard bundle={b} />
+          ))}
+        </section>
+      )
+    }
   </section>
 </BaseLayout>
