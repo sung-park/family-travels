@@ -2,7 +2,7 @@
 
 시온이 중심 **다세대 가족 여행** 일정·숙소·교통 공유 사이트입니다.
 
-- **첫 여행:** 2026-09-03 ~ 2026-09-09, 베트남 나트랑  
+- **첫 여행:** 2026-09-06 ~ 2026-09-13, 베트남 나트랑 (항공 예약 확정)  
 - **라이브:** [https://sung-park.github.io/family-travels/](https://sung-park.github.io/family-travels/)  
 - **호스팅:** GitHub Pages (project site, `base: /family-travels/`)  
 - **설계 문서:** [docs/design-family-travels.md](./docs/design-family-travels.md)

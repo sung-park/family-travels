@@ -7,15 +7,15 @@ destination:
   cityKo: 나트랑
   countryCode: VN
   airport: CXR
-startDate: 2026-09-03
-endDate: 2026-09-09
+startDate: 2026-09-06
+endDate: 2026-09-13
 timezone: Asia/Ho_Chi_Minh
 status: planned
 focusPersonId: sion
-updatedAt: 2026-08-07
+updatedAt: 2026-08-09
 summary: |
   시온이와 부모님, 친가 조부모님, 외할머니와 함께하는 나트랑·깜란 여행.
-  항공·본 숙소는 예약 진행 중이며, 첫날은 공항 근처에서 쉽니다.
+  대한항공 일정은 예약 확정. 첫날은 공항 근처에서 쉬고, 다음 날부터 본 리조트입니다.
 tags:
   - 베트남
   - 나트랑
@@ -41,11 +41,11 @@ lodgings:
   - id: hotel-cxr-airport-night1
     name: 깜란 공항 근처 호텔 (TBD)
     area: CXR 공항 인근
-    checkInDate: 2026-09-03
+    checkInDate: 2026-09-06
     checkInTime: "23:30"
-    checkOutDate: 2026-09-04
+    checkOutDate: 2026-09-07
     checkOutTime: "12:00"
-    notesPublic: 9/3 심야 도착이라 공항 근처 저가 호텔 1박 예정. 예약 전.
+    notesPublic: 9/6 심야 도착이라 공항 근처 저가 호텔 1박 예정. 호텔명·예약 전.
 
   - id: hotel-melia-vinpearl-cam-ranh
     name: 멜리아 빈펄 깜란 비치 리조트
@@ -54,11 +54,11 @@ lodgings:
     room: The Level · 3베드룸 빌라 · 비치 프론트 뷰
     address: Cam Ranh, Khanh Hoa, Vietnam
     mapUrl: https://maps.google.com/?q=Meli%C3%A1+Vinpearl+Cam+Ranh+Beach+Resort
-    checkInDate: 2026-09-04
+    checkInDate: 2026-09-07
     checkInTime: "15:00"
-    checkOutDate: 2026-09-08
+    checkOutDate: 2026-09-12
     checkOutTime: "22:00"
-    notesPublic: 본 숙소. 예약 예정. 귀국 항공이 9/9 00:20이라 8일 밤 퇴실·공항 이동.
+    notesPublic: 본 숙소. 예약 예정. 귀국 항공이 9/13 00:20이라 12일 밤 퇴실·공항 이동.
 
 transports:
   - id: flight-ke467-out
@@ -68,14 +68,14 @@ transports:
     flightNumber: KE467
     cabin: 일반석 세이버 (예약 등급 T)
     from:
-      name: 서울/인천
+      name: 서울/인천 터미널 2
       code: ICN
     to:
-      name: 나트랑(깜란)
+      name: 나트랑 터미널 2
       code: CXR
-    departAt: "2026-09-03T19:55:00+09:00"
-    arriveAt: "2026-09-03T23:05:00+07:00"
-    notesPublic: 예약·결제 전. 여권·스카이패스 회원번호 수집 중(사이트 미기재).
+    departAt: "2026-09-06T19:55:00+09:00"
+    arriveAt: "2026-09-06T23:05:00+07:00"
+    notesPublic: 예약 확정. B737-800 · 약 5시간 10분. PNR·여권 정보는 사이트 미기재.
 
   - id: flight-ke468-return
     type: flight
@@ -84,14 +84,14 @@ transports:
     flightNumber: KE468
     cabin: 일반석 세이버 (예약 등급 L)
     from:
-      name: 나트랑(깜란)
+      name: 나트랑 터미널 2
       code: CXR
     to:
-      name: 서울/인천
+      name: 서울/인천 터미널 2
       code: ICN
-    departAt: "2026-09-09T00:20:00+07:00"
-    arriveAt: "2026-09-09T07:25:00+09:00"
-    notesPublic: 심야 출발 — 9/8 저녁~밤 공항 이동. 예약·결제 전.
+    departAt: "2026-09-13T00:20:00+07:00"
+    arriveAt: "2026-09-13T07:25:00+09:00"
+    notesPublic: 예약 확정. B737-800 · 약 5시간 5분. 심야 출발 — 9/12 저녁~밤 공항 이동.
 
 links:
   - label: 주베트남 대한민국 대사관 (하노이) · 긴급 안내
@@ -115,10 +115,11 @@ packing:
     essential: true
 
 notesPublic:
-  - "항공·숙소 모두 예약 진행 중. 확정되면 일정만 갱신합니다(예약번호는 사이트에 올리지 않음)."
+  - "대한항공 일정 예약 확정 (KE467 / KE468). 예약번호·여권은 사이트에 올리지 않습니다."
+  - "본 숙소(멜리아 빈펄 깜란)·공항 근처 1박 호텔은 예약 진행/미정일 수 있습니다."
   - "무더위·자외선 주의. 시온이·조부모 페이스를 우선합니다."
   - "응급 — 베트남 경찰 113 · 응급의료 115. 호텔 프론트에 먼저 연락."
 ---
 
 시온이와 함께하는 나트랑·깜란 여행입니다.
-첫날은 공항 근처에서 쉬고, 다음 날부터 멜리아 빈펄 깜란 리조트에서 지냅니다.
+항공은 확정되었고, 첫날은 공항 근처에서 쉬고 다음 날부터 멜리아 빈펄 깜란 리조트에서 지냅니다.
