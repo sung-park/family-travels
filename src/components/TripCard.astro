@@ -9,6 +9,7 @@ import {
 import type { TripBundle } from "../lib/trip";
 import { participantLabels } from "../lib/trip";
 import { withBase } from "../lib/paths";
+import Icon from "./Icon.astro";
 
 interface Props {
   bundle: TripBundle;
@@ -20,61 +21,87 @@ const href = withBase(`trips/${slug}/`);
 const dateRange = formatDateRangeKo(trip.startDate, trip.endDate);
 const who = participantLabels(people);
 
-// Build-time approximation; enhanced by client script below
 const todayBuild = todayInTimeZone(trip.timezone);
 const dday = daysUntilStart(trip.startDate, todayBuild);
 const dayIdx = tripDayIndex(trip.startDate, trip.endDate, todayBuild);
 ---
 
 <article
-  class="trip-card rounded-2xl border border-border bg-surface p-5 shadow-sm"
+  class="trip-card card-lift overflow-hidden rounded-2xl border border-border bg-surface shadow-sm"
   data-start={trip.startDate}
   data-end={trip.endDate}
   data-tz={trip.timezone}
   data-phase={phaseAtBuild}
 >
   <a href={href} class="block no-underline text-inherit">
-    <div class="flex flex-wrap items-start justify-between gap-2">
-      <h2 class="text-xl font-bold text-ink">{trip.title}</h2>
-      <span
-        class="phase-badge inline-flex rounded-full bg-brand-50 px-2.5 py-1 text-xs font-medium text-brand-800"
-        data-phase-label
+    <div class="hero-beach hero-pattern relative px-5 pb-5 pt-4 text-white">
+      <div class="flex flex-wrap items-start justify-between gap-2">
+        <span
+          class="phase-badge inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-1 text-xs font-semibold backdrop-blur-sm"
+          data-phase-label
+        >
+          <Icon name="sun" class="size-3.5" />
+          {phaseLabelKo(phaseAtBuild)}
+        </span>
+        <span
+          class="inline-flex size-11 items-center justify-center rounded-2xl bg-white/15 text-2xl backdrop-blur-sm"
+          aria-hidden="true"
+        >
+          🏖️
+        </span>
+      </div>
+      <h2 class="mt-3 text-xl font-bold tracking-tight">{trip.title}</h2>
+      <p
+        class="relative-meta mt-1 text-sm font-semibold text-sky-50"
+        data-relative
       >
-        {phaseLabelKo(phaseAtBuild)}
-      </span>
+        {
+          phaseAtBuild === "pre"
+            ? dday === 0
+              ? "오늘 출발"
+              : `출발까지 D-${dday}`
+            : phaseAtBuild === "during" && dayIdx
+              ? `여행 ${dayIdx}일차`
+              : phaseAtBuild === "post"
+                ? "다녀왔어요"
+                : ""
+        }
+      </p>
     </div>
-    <p class="mt-2 text-base text-ink">
-      {dateRange}
-    </p>
-    <p class="mt-1 text-sm text-muted">
-      {trip.destination.cityKo}, {trip.destination.countryKo}
-    </p>
-    <p class="relative-meta mt-2 text-sm font-medium text-brand-700" data-relative>
+
+    <div class="space-y-2.5 px-5 py-4">
+      <p class="flex items-start gap-2 text-base text-ink">
+        <Icon name="calendar" class="mt-0.5 size-5 shrink-0 text-sky-600" />
+        <span>{dateRange}</span>
+      </p>
+      <p class="flex items-center gap-2 text-sm text-muted">
+        <Icon name="mapPin" class="size-5 shrink-0 text-rose-500" />
+        {trip.destination.cityKo}, {trip.destination.countryKo}
+      </p>
       {
-        phaseAtBuild === "pre"
-          ? dday === 0
-            ? "오늘 출발"
-            : `출발까지 D-${dday}`
-          : phaseAtBuild === "during" && dayIdx
-            ? `여행 ${dayIdx}일차`
-            : phaseAtBuild === "post"
-              ? "다녀왔어요"
-              : ""
+        who && (
+          <p class="flex items-start gap-2 text-sm text-muted">
+            <Icon name="users" class="mt-0.5 size-5 shrink-0 text-violet-600" />
+            <span>{who}</span>
+          </p>
+        )
       }
-    </p>
-    {
-      who && (
-        <p class="mt-3 text-sm text-muted">
-          <span class="sr-only">참가 </span>
-          {who}
-        </p>
-      )
-    }
-    {
-      trip.status === "planned" && (
-        <p class="mt-2 text-xs text-muted">예약·일정 일부 TBD</p>
-      )
-    }
+      <div class="flex items-center justify-between border-t border-border pt-3">
+        {
+          trip.status === "planned" ? (
+            <span class="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800">
+              예약·일정 일부 TBD
+            </span>
+          ) : (
+            <span />
+          )
+        }
+        <span class="inline-flex items-center gap-0.5 text-sm font-semibold text-brand-700">
+          자세히 보기
+          <Icon name="chevronRight" class="size-4" />
+        </span>
+      </div>
+    </div>
   </a>
 </article>
 
@@ -121,7 +148,12 @@ const dayIdx = tripDayIndex(trip.startDate, trip.endDate, todayBuild);
     const p = phase(start, end, today);
     card.dataset.phase = p;
     const badge = card.querySelector("[data-phase-label]");
-    if (badge) badge.textContent = phaseLabel(p);
+    if (badge) {
+      badge.innerHTML = "";
+      const span = document.createElement("span");
+      span.textContent = phaseLabel(p);
+      badge.append(span);
+    }
     const rel = card.querySelector("[data-relative]");
     if (rel) {
       if (p === "pre") {

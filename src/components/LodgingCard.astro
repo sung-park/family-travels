@@ -1,64 +1,104 @@
 ---
 import { formatDateKo } from "../lib/dates";
 import type { Lodging } from "../lib/schemas";
+import Icon from "./Icon.astro";
 
 interface Props {
   lodging: Lodging;
   highlight?: boolean;
+  index?: number;
 }
 
-const { lodging, highlight = false } = Astro.props;
+const { lodging, highlight = false, index = 0 } = Astro.props;
 const checkIn = `${formatDateKo(lodging.checkInDate)}${lodging.checkInTime ? ` ${lodging.checkInTime}` : ""}`;
 const checkOut = `${formatDateKo(lodging.checkOutDate)}${lodging.checkOutTime ? ` ${lodging.checkOutTime}` : ""}`;
+const emoji = index === 0 ? "🌙" : "🏝️";
 ---
 
 <article
   class:list={[
-    "rounded-2xl border p-4",
+    "card-lift overflow-hidden rounded-2xl border shadow-sm",
     highlight
-      ? "border-brand-600 bg-brand-50"
-      : "border-border bg-surface",
+      ? "border-brand-600 ring-2 ring-brand-100"
+      : "border-border",
   ]}
   id={`lodging-${lodging.id}`}
 >
-  <p class="text-xs font-medium uppercase tracking-wide text-muted">숙소</p>
-  <h3 class="mt-1 text-lg font-bold text-ink">{lodging.name}</h3>
-  {
-    lodging.nameLocal && (
-      <p class="text-sm text-muted">{lodging.nameLocal}</p>
-    )
-  }
-  {
-    lodging.room && (
-      <p class="mt-2 text-sm font-medium text-ink">{lodging.room}</p>
-    )
-  }
-  {
-    lodging.area && <p class="mt-1 text-sm text-muted">{lodging.area}</p>
-  }
-  <dl class="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
-    <dt class="text-muted">체크인</dt>
-    <dd class="text-ink">{checkIn}</dd>
-    <dt class="text-muted">체크아웃</dt>
-    <dd class="text-ink">{checkOut}</dd>
-  </dl>
-  {
-    lodging.notesPublic && (
-      <p class="mt-3 text-sm leading-relaxed text-ink">{lodging.notesPublic}</p>
-    )
-  }
-  {
-    lodging.mapUrl && (
-      <p class="mt-3">
+  <div
+    class:list={[
+      "flex items-center gap-3 px-4 py-3",
+      index === 0
+        ? "bg-gradient-to-r from-indigo-500 to-violet-500 text-white"
+        : "bg-gradient-to-r from-teal-500 to-cyan-500 text-white",
+    ]}
+  >
+    <span
+      class="flex size-11 items-center justify-center rounded-xl bg-white/20 text-2xl"
+      aria-hidden="true"
+    >
+      {emoji}
+    </span>
+    <div class="min-w-0 flex-1">
+      <p class="text-xs font-medium text-white/80">숙소 {index + 1}</p>
+      <h3 class="truncate text-base font-bold">{lodging.name}</h3>
+    </div>
+    <Icon name="hotel" class="size-6 shrink-0 opacity-80" />
+  </div>
+
+  <div class="space-y-3 bg-surface p-4">
+    {
+      lodging.nameLocal && (
+        <p class="text-sm text-muted">{lodging.nameLocal}</p>
+      )
+    }
+    {
+      lodging.room && (
+        <p class="rounded-xl bg-amber-50 px-3 py-2 text-sm font-medium text-amber-900">
+          🛏️ {lodging.room}
+        </p>
+      )
+    }
+    {
+      lodging.area && (
+        <p class="flex items-center gap-2 text-sm text-muted">
+          <Icon name="mapPin" class="size-4 text-rose-500" />
+          {lodging.area}
+        </p>
+      )
+    }
+    <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+      <div class="flex gap-2 rounded-xl bg-brand-50/80 px-3 py-2.5">
+        <Icon name="checkIn" class="mt-0.5 size-5 shrink-0 text-brand-700" />
+        <div>
+          <p class="text-xs font-medium text-brand-800">체크인</p>
+          <p class="text-sm font-semibold text-ink">{checkIn}</p>
+        </div>
+      </div>
+      <div class="flex gap-2 rounded-xl bg-orange-50 px-3 py-2.5">
+        <Icon name="checkOut" class="mt-0.5 size-5 shrink-0 text-orange-700" />
+        <div>
+          <p class="text-xs font-medium text-orange-800">체크아웃</p>
+          <p class="text-sm font-semibold text-ink">{checkOut}</p>
+        </div>
+      </div>
+    </div>
+    {
+      lodging.notesPublic && (
+        <p class="text-sm leading-relaxed text-ink">{lodging.notesPublic}</p>
+      )
+    }
+    {
+      lodging.mapUrl && (
         <a
           href={lodging.mapUrl}
           target="_blank"
           rel="noopener noreferrer"
-          class="inline-flex min-h-11 items-center text-sm font-medium text-brand-700"
+          class="inline-flex min-h-11 items-center gap-2 rounded-xl bg-brand-50 px-4 text-sm font-semibold text-brand-800 no-underline hover:bg-brand-100"
         >
+          <Icon name="mapPin" class="size-4" />
           지도 보기
         </a>
-      </p>
-    )
-  }
+      )
+    }
+  </div>
 </article>

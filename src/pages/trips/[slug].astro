@@ -1,8 +1,10 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DayTimeline from "../../components/DayTimeline.astro";
+import Icon from "../../components/Icon.astro";
 import LodgingCard from "../../components/LodgingCard.astro";
 import ParticipantChips from "../../components/ParticipantChips.astro";
+import SectionTitle from "../../components/SectionTitle.astro";
 import TodayHighlight from "../../components/TodayHighlight.astro";
 import TransportList from "../../components/TransportList.astro";
 import {
@@ -47,62 +49,97 @@ const description =
   path={`/trips/${slug}/`}
 >
   <article class="space-y-8">
-    <header class="space-y-3">
-      <div class="flex flex-wrap items-center gap-2">
-        <span class="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-medium text-brand-800">
-          {phaseLabelKo(phase)}
-        </span>
+    <header
+      class="hero-beach hero-pattern relative overflow-hidden rounded-3xl px-5 py-6 text-white shadow-md"
+    >
+      <div class="relative z-10 space-y-3">
+        <div class="flex flex-wrap items-center gap-2">
+          <span
+            class="inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-1 text-xs font-semibold backdrop-blur-sm"
+          >
+            <Icon name="sun" class="size-3.5" />
+            {phaseLabelKo(phase)}
+          </span>
+          {
+            trip.status === "planned" && (
+              <span class="rounded-full bg-amber-400/90 px-2.5 py-1 text-xs font-semibold text-amber-950">
+                예약 진행 중
+              </span>
+            )
+          }
+        </div>
+        <h1 class="text-2xl font-bold tracking-tight">{trip.title}</h1>
+        <p class="flex items-center gap-2 text-base text-sky-50">
+          <Icon name="calendar" class="size-5 shrink-0" />
+          {dateRange}
+        </p>
+        <p class="flex items-center gap-2 text-sm text-sky-100">
+          <Icon name="mapPin" class="size-4 shrink-0" />
+          {trip.destination.cityKo}, {trip.destination.countryKo}
+        </p>
         {
-          trip.status === "planned" && (
-            <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">
-              예약 진행 중
-            </span>
+          trip.summary && (
+            <p class="whitespace-pre-line text-sm leading-relaxed text-sky-50/95">
+              {trip.summary}
+            </p>
           )
         }
       </div>
-      <h1 class="text-2xl font-bold tracking-tight text-ink">{trip.title}</h1>
-      <p class="text-base text-ink">{dateRange}</p>
-      <p class="text-sm text-muted">
-        {trip.destination.cityKo}, {trip.destination.countryKo}
-      </p>
-      {
-        trip.summary && (
-          <p class="whitespace-pre-line text-sm leading-relaxed text-muted">
-            {trip.summary}
-          </p>
-        )
-      }
+      <div
+        class="pointer-events-none absolute -right-1 top-4 text-6xl opacity-25 select-none"
+        aria-hidden="true"
+      >
+        🇻🇳
+      </div>
     </header>
+
+    <!-- Quick jump chips -->
+    <nav
+      class="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1"
+      aria-label="섹션 바로가기"
+    >
+      {
+        [
+          { href: "#today-highlight", icon: "sparkle" as const, label: "오늘" },
+          { href: "#sec-people", icon: "users" as const, label: "가족" },
+          { href: "#sec-lodging", icon: "hotel" as const, label: "숙소" },
+          { href: "#sec-transport", icon: "plane" as const, label: "항공" },
+          { href: "#sec-days", icon: "calendar" as const, label: "일정" },
+          { href: "#sec-pack", icon: "bag" as const, label: "짐" },
+        ].map((item) => (
+          <a
+            href={item.href}
+            class="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border border-border bg-surface px-3.5 text-sm font-medium text-ink no-underline shadow-sm hover:border-brand-600 hover:bg-brand-50"
+          >
+            <Icon name={item.icon} class="size-4 text-brand-700" />
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
 
     <TodayHighlight trip={trip} days={days} />
 
     <section class="space-y-3" aria-labelledby="sec-people">
-      <h2 id="sec-people" class="text-lg font-semibold text-ink">
-        함께하는 가족
-      </h2>
+      <SectionTitle
+        id="sec-people"
+        icon="users"
+        title="함께하는 가족"
+        tone="violet"
+      />
       <ParticipantChips people={people} focusPersonId={trip.focusPersonId} />
-      <ul class="text-sm text-muted">
-        {
-          people.map((p) => (
-            <li>
-              {p.nameShort}
-              {p.nameKo !== p.nameShort && (
-                <span class="text-muted"> ({p.nameKo})</span>
-              )}
-            </li>
-          ))
-        }
-      </ul>
     </section>
 
     {
       trip.lodgings.length > 0 && (
         <section class="space-y-3" aria-labelledby="sec-lodging">
-          <h2 id="sec-lodging" class="text-lg font-semibold text-ink">
-            숙소
-          </h2>
+          <SectionTitle id="sec-lodging" icon="hotel" title="숙소" tone="mint" />
           {trip.lodgings.map((l, i) => (
-            <LodgingCard lodging={l} highlight={i === 0 && phase === "during"} />
+            <LodgingCard
+              lodging={l}
+              highlight={i === 0 && phase === "during"}
+              index={i}
+            />
           ))}
         </section>
       )
@@ -111,9 +148,12 @@ const description =
     {
       trip.transports.length > 0 && (
         <section class="space-y-3" aria-labelledby="sec-transport">
-          <h2 id="sec-transport" class="text-lg font-semibold text-ink">
-            교통
-          </h2>
+          <SectionTitle
+            id="sec-transport"
+            icon="plane"
+            title="교통"
+            tone="sky"
+          />
           <TransportList transports={trip.transports} />
         </section>
       )
@@ -122,9 +162,12 @@ const description =
     {
       days.length > 0 && (
         <section class="space-y-3" aria-labelledby="sec-days">
-          <h2 id="sec-days" class="text-lg font-semibold text-ink">
-            일별 일정
-          </h2>
+          <SectionTitle
+            id="sec-days"
+            icon="calendar"
+            title="일별 일정"
+            tone="sand"
+          />
           <DayTimeline days={days} trip={trip} peopleById={peopleById} />
         </section>
       )
@@ -132,17 +175,22 @@ const description =
 
     {
       trip.packing.length > 0 && (
-        <section class="space-y-2" aria-labelledby="sec-pack">
-          <h2 id="sec-pack" class="text-lg font-semibold text-ink">
-            준비물
-          </h2>
-          <ul class="list-inside list-disc space-y-1 text-sm text-ink">
+        <section class="space-y-3" aria-labelledby="sec-pack">
+          <SectionTitle id="sec-pack" icon="bag" title="준비물" tone="coral" />
+          <ul class="grid gap-2">
             {trip.packing.map((p) => (
-              <li>
-                {p.item}
-                {p.essential && (
-                  <span class="text-brand-700"> (필수)</span>
-                )}
+              <li class="flex items-start gap-2 rounded-xl border border-border bg-surface px-3 py-2.5 text-sm shadow-sm">
+                <span class="mt-0.5 text-base" aria-hidden="true">
+                  {p.essential ? "✅" : "📦"}
+                </span>
+                <span class="text-ink">
+                  {p.item}
+                  {p.essential && (
+                    <span class="ml-1 text-xs font-semibold text-rose-600">
+                      필수
+                    </span>
+                  )}
+                </span>
               </li>
             ))}
           </ul>
@@ -152,20 +200,21 @@ const description =
 
     {
       (emergency.length > 0 || otherLinks.length > 0) && (
-        <section class="space-y-2" aria-labelledby="sec-links">
-          <h2 id="sec-links" class="text-lg font-semibold text-ink">
-            링크
-          </h2>
-          <ul class="space-y-2 text-sm">
+        <section class="space-y-3" aria-labelledby="sec-links">
+          <SectionTitle id="sec-links" icon="link" title="링크" tone="sky" />
+          <ul class="space-y-2">
             {emergency.map((l) => (
               <li>
                 <a
                   href={l.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="font-semibold text-brand-800"
+                  class="flex min-h-12 items-center gap-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-900 no-underline"
                 >
-                  [긴급] {l.label}
+                  <span class="text-lg" aria-hidden="true">
+                    🚨
+                  </span>
+                  {l.label}
                 </a>
               </li>
             ))}
@@ -175,8 +224,9 @@ const description =
                   href={l.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="text-brand-700"
+                  class="flex min-h-11 items-center gap-3 rounded-xl border border-border bg-surface px-3 py-2 text-sm font-medium text-brand-800 no-underline shadow-sm"
                 >
+                  <Icon name="link" class="size-4 shrink-0" />
                   {l.label}
                 </a>
               </li>
@@ -188,13 +238,14 @@ const description =
 
     {
       trip.notesPublic.length > 0 && (
-        <section class="space-y-2" aria-labelledby="sec-notes">
-          <h2 id="sec-notes" class="text-lg font-semibold text-ink">
-            메모
-          </h2>
-          <ul class="list-inside list-disc space-y-1 text-sm text-ink">
+        <section class="space-y-3" aria-labelledby="sec-notes">
+          <SectionTitle id="sec-notes" icon="note" title="메모" tone="sand" />
+          <ul class="space-y-2">
             {trip.notesPublic.map((n) => (
-              <li>{n}</li>
+              <li class="flex gap-2 rounded-xl bg-amber-50 px-3 py-2.5 text-sm text-ink">
+                <span aria-hidden="true">📝</span>
+                <span>{n}</span>
+              </li>
             ))}
           </ul>
         </section>
@@ -203,12 +254,12 @@ const description =
 
     {
       body?.trim() && (
-        <section class="space-y-2 text-sm leading-relaxed text-muted">
+        <section class="rounded-2xl border border-border bg-surface p-4 text-sm leading-relaxed text-muted shadow-sm">
           {body
             .trim()
             .split(/\n+/)
             .map((para) => (
-              <p>{para}</p>
+              <p class="mb-2 last:mb-0">{para}</p>
             ))}
         </section>
       )
@@ -216,7 +267,10 @@ const description =
 
     {
       trip.updatedAt && (
-        <p class="text-xs text-muted">업데이트: {trip.updatedAt}</p>
+        <p class="flex items-center gap-1.5 text-xs text-muted">
+          <Icon name="clock" class="size-3.5" />
+          업데이트: {trip.updatedAt}
+        </p>
       )
     }
   </article>

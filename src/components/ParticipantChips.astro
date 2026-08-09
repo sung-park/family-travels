@@ -1,5 +1,6 @@
 ---
 import type { Person } from "../lib/schemas";
+import Icon from "./Icon.astro";
 
 interface Props {
   people: Person[];
@@ -7,6 +8,14 @@ interface Props {
 }
 
 const { people, focusPersonId } = Astro.props;
+
+function emojiFor(p: Person) {
+  if (p.generation === "child" || p.isFocus) return "🧒";
+  if (p.generation === "grandparent") return "👴";
+  if (p.side === "nuclear" && p.id === "mom") return "👩";
+  if (p.side === "nuclear") return "👨";
+  return "👤";
+}
 ---
 
 <ul class="flex flex-wrap gap-2" aria-label="참가자">
@@ -17,15 +26,38 @@ const { people, focusPersonId } = Astro.props;
         <li>
           <span
             class:list={[
-              "inline-flex min-h-11 items-center rounded-full px-3 py-1.5 text-sm font-medium",
+              "inline-flex min-h-11 items-center gap-2 rounded-2xl px-3 py-1.5 text-sm font-medium shadow-sm",
               focus
-                ? "bg-brand-600 text-white"
-                : "bg-brand-50 text-brand-800",
+                ? "bg-gradient-to-r from-sky-500 to-teal-500 text-white ring-2 ring-sky-200"
+                : "bg-white text-ink ring-1 ring-border",
             ]}
             title={p.nameKo}
           >
-            {p.nameShort}
-            {focus && <span class="sr-only"> (중심)</span>}
+            <span
+              class:list={[
+                "flex size-8 items-center justify-center rounded-xl text-base",
+                focus ? "bg-white/20" : "bg-brand-50",
+              ]}
+              aria-hidden="true"
+            >
+              {emojiFor(p)}
+            </span>
+            <span class="flex flex-col leading-tight">
+              <span class="font-semibold">{p.nameShort}</span>
+              {p.nameKo !== p.nameShort && (
+                <span
+                  class:list={[
+                    "text-[11px] font-normal",
+                    focus ? "text-white/80" : "text-muted",
+                  ]}
+                >
+                  {p.nameKo}
+                </span>
+              )}
+            </span>
+            {focus && (
+              <Icon name="sparkle" class="size-3.5 text-amber-200" />
+            )}
           </span>
         </li>
       );

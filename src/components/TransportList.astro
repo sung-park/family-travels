@@ -1,6 +1,7 @@
 ---
 import { formatDateTimeKo } from "../lib/dates";
 import type { Transport } from "../lib/schemas";
+import Icon from "./Icon.astro";
 
 interface Props {
   transports: Transport[];
@@ -9,10 +10,11 @@ interface Props {
 const { transports } = Astro.props;
 
 function leg(t: Transport) {
-  const fromCode = t.from.code ? ` ${t.from.code}` : "";
-  const toCode = t.to.code ? ` ${t.to.code}` : "";
   return {
-    route: `${t.from.name}${fromCode} → ${t.to.name}${toCode}`,
+    fromCode: t.from.code ?? "",
+    toCode: t.to.code ?? "",
+    fromName: t.from.name,
+    toName: t.to.name,
     depart: formatDateTimeKo(t.departAt),
     arrive: formatDateTimeKo(t.arriveAt),
   };
@@ -21,48 +23,85 @@ function leg(t: Transport) {
 
 <div class="space-y-3">
   {
-    transports.map((t) => {
-      const { route, depart, arrive } = leg(t);
+    transports.map((t, i) => {
+      const { fromCode, toCode, fromName, toName, depart, arrive } = leg(t);
+      const isOut = i === 0;
       return (
-        <article class="rounded-2xl border border-border bg-surface p-4">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <h3 class="text-base font-bold text-ink">{t.label}</h3>
-            {t.type === "flight" && (
-              <span class="rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-800">
-                항공
+        <article class="card-lift overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
+          <div
+            class:list={[
+              "flex items-center justify-between gap-2 px-4 py-3 text-white",
+              isOut
+                ? "bg-gradient-to-r from-sky-600 to-blue-600"
+                : "bg-gradient-to-r from-slate-600 to-slate-700",
+            ]}
+          >
+            <div class="flex items-center gap-2">
+              <span class="flex size-10 items-center justify-center rounded-xl bg-white/15">
+                <Icon name="plane" class="size-5" />
+              </span>
+              <div>
+                <p class="text-xs text-white/80">{isOut ? "가는 편" : "오는 편"}</p>
+                <h3 class="font-bold">{t.label}</h3>
+              </div>
+            </div>
+            {(t.flightNumber || t.operator) && (
+              <span class="rounded-full bg-white/20 px-2.5 py-1 text-xs font-semibold">
+                {[t.operator, t.flightNumber].filter(Boolean).join(" ")}
               </span>
             )}
           </div>
-          <p class="mt-2 text-sm font-medium text-ink">{route}</p>
-          {(t.operator || t.flightNumber) && (
-            <p class="mt-1 text-sm text-muted">
-              {[t.operator, t.flightNumber].filter(Boolean).join(" · ")}
-              {t.cabin ? ` · ${t.cabin}` : ""}
-            </p>
-          )}
-          <dl class="mt-3 space-y-2 text-sm">
-            <div>
-              <dt class="text-muted">출발</dt>
-              <dd class="text-lg font-semibold tabular-nums text-ink">
-                {depart.time}
-                <span class="ml-2 text-sm font-normal text-muted">
-                  {depart.date}
-                </span>
-              </dd>
+
+          <div class="p-4">
+            <div class="flex items-center gap-2">
+              <div class="min-w-0 flex-1 text-center">
+                <p class="text-2xl font-bold tabular-nums tracking-tight text-ink">
+                  {fromCode || "—"}
+                </p>
+                <p class="mt-0.5 truncate text-xs text-muted">{fromName}</p>
+              </div>
+              <div class="flex shrink-0 flex-col items-center gap-0.5 px-1 text-brand-600">
+                <Icon name="plane" class="size-5 rotate-90" />
+                <span class="text-[10px] font-medium text-muted">비행</span>
+              </div>
+              <div class="min-w-0 flex-1 text-center">
+                <p class="text-2xl font-bold tabular-nums tracking-tight text-ink">
+                  {toCode || "—"}
+                </p>
+                <p class="mt-0.5 truncate text-xs text-muted">{toName}</p>
+              </div>
             </div>
-            <div>
-              <dt class="text-muted">도착</dt>
-              <dd class="text-lg font-semibold tabular-nums text-ink">
-                {arrive.time}
-                <span class="ml-2 text-sm font-normal text-muted">
-                  {arrive.date}
-                </span>
-              </dd>
+
+            <div class="mt-4 grid grid-cols-2 gap-2">
+              <div class="rounded-xl bg-emerald-50 px-3 py-2.5">
+                <p class="flex items-center gap-1 text-xs font-medium text-emerald-800">
+                  <Icon name="clock" class="size-3.5" />
+                  출발
+                </p>
+                <p class="mt-0.5 text-xl font-bold tabular-nums text-ink">
+                  {depart.time}
+                </p>
+                <p class="text-xs text-muted">{depart.date}</p>
+              </div>
+              <div class="rounded-xl bg-sky-50 px-3 py-2.5">
+                <p class="flex items-center gap-1 text-xs font-medium text-sky-800">
+                  <Icon name="clock" class="size-3.5" />
+                  도착
+                </p>
+                <p class="mt-0.5 text-xl font-bold tabular-nums text-ink">
+                  {arrive.time}
+                </p>
+                <p class="text-xs text-muted">{arrive.date}</p>
+              </div>
             </div>
-          </dl>
-          {t.notesPublic && (
-            <p class="mt-3 text-sm text-muted">{t.notesPublic}</p>
-          )}
+
+            {t.cabin && (
+              <p class="mt-3 text-sm text-muted">💺 {t.cabin}</p>
+            )}
+            {t.notesPublic && (
+              <p class="mt-2 text-sm text-muted">{t.notesPublic}</p>
+            )}
+          </div>
         </article>
       );
     })

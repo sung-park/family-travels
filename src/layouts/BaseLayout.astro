@@ -1,5 +1,6 @@
 ---
 import BaseHead from "../components/BaseHead.astro";
+import Icon from "../components/Icon.astro";
 import { withBase } from "../lib/paths";
 import "../styles/global.css";
 
@@ -28,27 +29,34 @@ const aboutHref = withBase("about/");
     />
   </head>
   <body class="flex min-h-dvh flex-col">
-    <header class="border-b border-border bg-surface">
+    <header class="sticky top-0 z-40 border-b border-border/80 bg-surface/90 backdrop-blur-md">
       <div
         class="mx-auto flex max-w-lg items-center justify-between gap-3 px-4 py-3"
       >
         <a
           href={homeHref}
-          class="text-[1.05rem] font-semibold text-ink no-underline hover:text-brand-700"
+          class="flex items-center gap-2 text-[1.05rem] font-semibold text-ink no-underline hover:text-brand-700"
         >
+          <span
+            class="inline-flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-sky-400 to-teal-500 text-white shadow-sm"
+          >
+            <Icon name="beach" class="size-5" />
+          </span>
           우리 가족 여행
         </a>
         <nav class="flex items-center gap-1" aria-label="주요 메뉴">
           <a
             href={homeHref}
-            class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg px-3 text-sm font-medium text-ink no-underline hover:bg-brand-50"
+            class="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl px-3 text-sm font-medium text-ink no-underline hover:bg-brand-50"
           >
+            <Icon name="home" class="size-4 text-brand-700" />
             홈
           </a>
           <a
             href={aboutHref}
-            class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg px-3 text-sm font-medium text-ink no-underline hover:bg-brand-50"
+            class="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl px-3 text-sm font-medium text-ink no-underline hover:bg-brand-50"
           >
+            <Icon name="info" class="size-4 text-brand-700" />
             소개
           </a>
         </nav>
@@ -59,9 +67,12 @@ const aboutHref = withBase("about/");
       <slot />
     </main>
 
-    <footer class="border-t border-border bg-surface">
+    <footer class="mt-auto border-t border-border bg-surface/80">
       <div class="mx-auto max-w-lg px-4 py-5 text-sm text-muted">
-        <p class="mb-1">시온이와 함께하는 가족 여행 일정 공유</p>
+        <p class="mb-1 flex items-center gap-2 font-medium text-ink">
+          <Icon name="sparkle" class="size-4 text-amber-400" />
+          시온이와 함께하는 가족 여행
+        </p>
         <p class="text-xs leading-relaxed">
           카톡 인앱 브라우저에서 지도·전화가 안 되면 오른쪽 위 메뉴에서
           Safari/Chrome으로 열어 주세요.

@@ -1,5 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import Icon from "../components/Icon.astro";
+import SectionTitle from "../components/SectionTitle.astro";
 import TripCard from "../components/TripCard.astro";
 import { getTravelPhase, todayInTimeZone } from "../lib/dates";
 import { getAllTripBundles } from "../lib/trip";
@@ -8,8 +10,6 @@ const bundles = (await getAllTripBundles()).filter(
   (b) => b.trip.status !== "idea" && b.trip.status !== "cancelled",
 );
 
-// Group by build-time phase; client script on cards updates labels.
-// Mid-trip: show under "지금 여행 중" when phaseAtBuild === during.
 const upcoming = bundles.filter((b) => {
   const today = todayInTimeZone(b.trip.timezone);
   return getTravelPhase(b.trip.startDate, b.trip.endDate, today) === "pre";
@@ -30,19 +30,56 @@ const past = bundles.filter((b) => {
   path="/"
 >
   <section class="space-y-8">
-    <div>
-      <h1 class="text-2xl font-bold tracking-tight text-ink">
-        우리 가족 여행
-      </h1>
-      <p class="mt-2 text-muted">
-        시온이를 중심으로 함께 떠나는 여행 일정·숙소·교통을 모아요.
-      </p>
+    <div
+      class="hero-beach hero-pattern relative overflow-hidden rounded-3xl px-5 py-6 text-white shadow-md"
+    >
+      <div class="relative z-10">
+        <p class="text-sm font-medium text-sky-100">Family Travels</p>
+        <h1 class="mt-1 text-2xl font-bold tracking-tight">
+          우리 가족 여행
+        </h1>
+        <p class="mt-2 max-w-[20rem] text-sm leading-relaxed text-sky-50">
+          시온이를 중심으로 일정·숙소·교통을 한곳에서 공유해요.
+        </p>
+        <ul class="mt-4 flex flex-wrap gap-2">
+          <li
+            class="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-xs font-medium backdrop-blur-sm"
+          >
+            <Icon name="calendar" class="size-3.5" /> 일정
+          </li>
+          <li
+            class="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-xs font-medium backdrop-blur-sm"
+          >
+            <Icon name="hotel" class="size-3.5" /> 숙소
+          </li>
+          <li
+            class="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-xs font-medium backdrop-blur-sm"
+          >
+            <Icon name="plane" class="size-3.5" /> 항공
+          </li>
+        </ul>
+      </div>
+      <div
+        class="pointer-events-none absolute -right-2 -top-2 text-7xl opacity-30 select-none"
+        aria-hidden="true"
+      >
+        ✈️
+      </div>
+      <div
+        class="pointer-events-none absolute bottom-2 right-4 text-5xl opacity-40 select-none"
+        aria-hidden="true"
+      >
+        🌴
+      </div>
     </div>
 
     {
       bundles.length === 0 && (
-        <div class="rounded-2xl border border-border bg-surface p-5">
-          <p class="text-ink">아직 등록된 여행이 없어요.</p>
+        <div class="rounded-2xl border border-dashed border-border bg-surface p-6 text-center">
+          <div class="mx-auto mb-3 flex size-14 items-center justify-center rounded-2xl bg-brand-50 text-3xl">
+            🗺️
+          </div>
+          <p class="font-medium text-ink">아직 등록된 여행이 없어요</p>
         </div>
       )
     }
@@ -50,9 +87,7 @@ const past = bundles.filter((b) => {
     {
       ongoing.length > 0 && (
         <section class="space-y-3" aria-labelledby="sec-ongoing">
-          <h2 id="sec-ongoing" class="text-lg font-semibold text-ink">
-            지금 여행 중
-          </h2>
+          <SectionTitle id="sec-ongoing" icon="sun" title="지금 여행 중" tone="coral" />
           {ongoing.map((b) => (
             <TripCard bundle={b} />
           ))}
@@ -63,9 +98,12 @@ const past = bundles.filter((b) => {
     {
       upcoming.length > 0 && (
         <section class="space-y-3" aria-labelledby="sec-upcoming">
-          <h2 id="sec-upcoming" class="text-lg font-semibold text-ink">
-            다가오는 여행
-          </h2>
+          <SectionTitle
+            id="sec-upcoming"
+            icon="plane"
+            title="다가오는 여행"
+            tone="sky"
+          />
           {upcoming.map((b) => (
             <TripCard bundle={b} />
           ))}
@@ -76,21 +114,8 @@ const past = bundles.filter((b) => {
     {
       past.length > 0 && (
         <section class="space-y-3" aria-labelledby="sec-past">
-          <h2 id="sec-past" class="text-lg font-semibold text-ink">
-            지난 여행
-          </h2>
+          <SectionTitle id="sec-past" icon="beach" title="지난 여행" tone="sand" />
           {past.map((b) => (
-            <TripCard bundle={b} />
-          ))}
-        </section>
-      )
-    }
-
-    {
-      bundles.length > 0 && upcoming.length === 0 && ongoing.length === 0 && past.length === 0 && (
-        <section class="space-y-3">
-          <h2 class="text-lg font-semibold text-ink">여행</h2>
-          {bundles.map((b) => (
             <TripCard bundle={b} />
           ))}
         </section>

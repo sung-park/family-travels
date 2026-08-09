@@ -1,0 +1,47 @@
+---
+import Icon from "./Icon.astro";
+
+interface Props {
+  id?: string;
+  icon:
+    | "plane"
+    | "hotel"
+    | "calendar"
+    | "users"
+    | "mapPin"
+    | "beach"
+    | "bag"
+    | "link"
+    | "note"
+    | "sun"
+    | "sparkle"
+    | "info";
+  title: string;
+  tone?: "sky" | "sand" | "mint" | "coral" | "violet";
+}
+
+const { id, icon, title, tone = "sky" } = Astro.props;
+
+const tones: Record<string, string> = {
+  sky: "bg-sky-100 text-sky-700",
+  sand: "bg-amber-100 text-amber-800",
+  mint: "bg-emerald-100 text-emerald-800",
+  coral: "bg-rose-100 text-rose-700",
+  violet: "bg-violet-100 text-violet-800",
+};
+---
+
+<h2
+  id={id}
+  class="flex items-center gap-2.5 text-lg font-semibold text-ink"
+>
+  <span
+    class:list={[
+      "inline-flex size-9 shrink-0 items-center justify-center rounded-xl",
+      tones[tone],
+    ]}
+  >
+    <Icon name={icon} class="size-5" />
+  </span>
+  {title}
+</h2>

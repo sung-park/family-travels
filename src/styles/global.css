@@ -1,19 +1,21 @@
 @import "tailwindcss";
 
-/* Family-travels base: Korean mobile-first, large type, reduced motion */
+/* Family-travels: warmer, more visual mobile-first UI */
 @theme {
   --font-sans: "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
     ui-sans-serif, system-ui, sans-serif;
-  --color-brand-50: #f0f9ff;
-  --color-brand-100: #e0f2fe;
+  --color-brand-50: #eef8ff;
+  --color-brand-100: #d9efff;
   --color-brand-600: #0284c7;
   --color-brand-700: #0369a1;
   --color-brand-800: #075985;
   --color-ink: #0f172a;
   --color-muted: #64748b;
   --color-surface: #ffffff;
-  --color-canvas: #f8fafc;
+  --color-canvas: #f4f7fb;
   --color-border: #e2e8f0;
+  --color-sand: #fff7ed;
+  --color-sea: #ecfeff;
 }
 
 @layer base {
@@ -40,6 +42,10 @@
     @apply min-h-dvh bg-canvas font-sans text-ink antialiased;
     font-size: 17px;
     line-height: 1.6;
+    background-image:
+      radial-gradient(ellipse 120% 80% at 100% -20%, #dbeafe 0%, transparent 50%),
+      radial-gradient(ellipse 80% 50% at 0% 100%, #ffedd5 0%, transparent 45%);
+    background-attachment: fixed;
   }
 
   a {
@@ -48,5 +54,28 @@
 
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-brand-600;
+  }
+}
+
+@layer components {
+  .hero-beach {
+    background:
+      linear-gradient(145deg, #0ea5e9 0%, #0284c7 42%, #0d9488 100%);
+  }
+
+  .hero-pattern {
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  .card-lift {
+    @apply transition-shadow duration-200;
+  }
+
+  @media (hover: hover) {
+    .card-lift:hover {
+      box-shadow:
+        0 10px 25px -5px rgb(14 165 233 / 0.15),
+        0 4px 10px -6px rgb(15 23 42 / 0.08);
+    }
   }
 }
