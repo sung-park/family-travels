@@ -60,10 +60,13 @@ export function formatDateKo(
   return `${y}년 ${m}월 ${d}일 (${weekday})`;
 }
 
-/** Format ISO datetime for display in a target TZ (or as stored wall clock). */
+/**
+ * Format ISO datetime in an explicit IANA timezone.
+ * Prefer formatIsoWallClock for flight ticket times so CI (UTC) cannot shift them.
+ */
 export function formatDateTimeKo(
   iso: string,
-  timeZone?: string,
+  timeZone: string,
 ): { date: string; time: string } {
   const d = new Date(iso);
   const dateFmt = new Intl.DateTimeFormat("ko-KR", {
@@ -80,6 +83,25 @@ export function formatDateTimeKo(
     hour12: false,
   });
   return { date: dateFmt.format(d), time: timeFmt.format(d) };
+}
+
+/**
+ * Flight / ticket wall-clock: use the date & time as written in the ISO string
+ * (before the offset), not the build server or browser timezone.
+ * e.g. "2026-09-06T19:55:00+09:00" → 19:55 on 2026-09-06 (not 10:55 UTC).
+ */
+export function formatIsoWallClock(iso: string): { date: string; time: string } {
+  const m = iso.match(
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::\d{2})?(?:\.\d+)?/,
+  );
+  if (m) {
+    const [, y, mo, d, h, mi] = m;
+    return {
+      date: formatDateKo(`${y}-${mo}-${d}`),
+      time: `${h}:${mi}`,
+    };
+  }
+  return formatDateTimeKo(iso, "Asia/Seoul");
 }
 
 export function phaseLabelKo(phase: TravelPhase): string {

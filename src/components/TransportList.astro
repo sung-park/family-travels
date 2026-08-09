@@ -1,5 +1,5 @@
 ---
-import { formatDateTimeKo } from "../lib/dates";
+import { formatIsoWallClock } from "../lib/dates";
 import type { Transport } from "../lib/schemas";
 import Icon from "./Icon.astro";
 
@@ -15,8 +15,9 @@ function leg(t: Transport) {
     toCode: t.to.code ?? "",
     fromName: t.from.name,
     toName: t.to.name,
-    depart: formatDateTimeKo(t.departAt),
-    arrive: formatDateTimeKo(t.arriveAt),
+    // Ticket local times — never convert via CI/browser TZ
+    depart: formatIsoWallClock(t.departAt),
+    arrive: formatIsoWallClock(t.arriveAt),
   };
 }
 ---
