@@ -1,6 +1,7 @@
 ---
 import { formatDateKo } from "../lib/dates";
 import type { Lodging } from "../lib/schemas";
+import { withBase } from "../lib/paths";
 import Icon from "./Icon.astro";
 
 interface Props {
@@ -12,7 +13,22 @@ interface Props {
 const { lodging, highlight = false, index = 0 } = Astro.props;
 const checkIn = `${formatDateKo(lodging.checkInDate)}${lodging.checkInTime ? ` ${lodging.checkInTime}` : ""}`;
 const checkOut = `${formatDateKo(lodging.checkOutDate)}${lodging.checkOutTime ? ` ${lodging.checkOutTime}` : ""}`;
-const emoji = index === 0 ? "🌙" : "🏝️";
+
+const emojis = ["🌃", "🏊", "🏝️"];
+const emoji = emojis[index % emojis.length] ?? "🏨";
+
+const coverSrc = lodging.coverImage
+  ? lodging.coverImage.startsWith("http")
+    ? lodging.coverImage
+    : withBase(lodging.coverImage.replace(/^\//, ""))
+  : null;
+
+const fallbackGrad =
+  index === 0
+    ? "from-indigo-700 via-slate-800 to-slate-900"
+    : index === 1
+      ? "from-teal-700 via-cyan-800 to-sky-900"
+      : "from-emerald-800 via-teal-900 to-slate-900";
 ---
 
 <article
@@ -24,33 +40,71 @@ const emoji = index === 0 ? "🌙" : "🏝️";
   ]}
   id={`lodging-${lodging.id}`}
 >
-  <div
-    class:list={[
-      "flex items-center gap-3 px-4 py-3",
-      index === 0
-        ? "bg-gradient-to-r from-indigo-500 to-violet-500 text-white"
-        : "bg-gradient-to-r from-teal-500 to-cyan-500 text-white",
-    ]}
-  >
-    <span
-      class="flex size-11 items-center justify-center rounded-xl bg-white/20 text-2xl"
+  <!-- Banner: photo + dark gradient for readable white text -->
+  <div class="relative h-40 overflow-hidden sm:h-44">
+    {
+      coverSrc ? (
+        <img
+          src={coverSrc}
+          alt=""
+          class="absolute inset-0 size-full scale-105 object-cover"
+          loading="lazy"
+          decoding="async"
+        />
+      ) : (
+        <div
+          class:list={[
+            "absolute inset-0 bg-gradient-to-br",
+            fallbackGrad,
+          ]}
+        />
+      )
+    }
+    <!-- Blur/dim overlay so title stays readable -->
+    <div
+      class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/25"
       aria-hidden="true"
-    >
-      {emoji}
-    </span>
-    <div class="min-w-0 flex-1">
-      <p class="text-xs font-medium text-white/80">숙소 {index + 1}</p>
-      <h3 class="truncate text-base font-bold">{lodging.name}</h3>
+    />
+    {
+      coverSrc && (
+        <div
+          class="absolute inset-0 backdrop-blur-[1.5px]"
+          aria-hidden="true"
+        />
+      )
+    }
+    <div class="absolute inset-0 bg-black/20" aria-hidden="true" />
+
+    <div class="relative flex h-full flex-col justify-between p-4 text-white">
+      <div class="flex items-start justify-between gap-2">
+        <span
+          class="inline-flex items-center gap-1.5 rounded-full bg-black/35 px-2.5 py-1 text-xs font-semibold backdrop-blur-sm"
+        >
+          <span aria-hidden="true">{emoji}</span>
+          숙소 {index + 1}
+        </span>
+        <span
+          class="flex size-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm"
+        >
+          <Icon name="hotel" class="size-5" />
+        </span>
+      </div>
+      <div class="min-w-0">
+        <h3 class="text-lg font-bold leading-snug drop-shadow-sm">
+          {lodging.name}
+        </h3>
+        {
+          lodging.nameLocal && (
+            <p class="mt-0.5 truncate text-sm text-white/90">
+              {lodging.nameLocal}
+            </p>
+          )
+        }
+      </div>
     </div>
-    <Icon name="hotel" class="size-6 shrink-0 opacity-80" />
   </div>
 
   <div class="space-y-3 bg-surface p-4">
-    {
-      lodging.nameLocal && (
-        <p class="text-sm text-muted">{lodging.nameLocal}</p>
-      )
-    }
     {
       lodging.room && (
         <p class="rounded-xl bg-amber-50 px-3 py-2 text-sm font-medium text-amber-900">

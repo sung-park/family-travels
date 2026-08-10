@@ -71,6 +71,8 @@ export const lodgingSchema = z.object({
   room: z.string().optional(),
   address: z.string().optional(),
   mapUrl: z.string().url().optional(),
+  /** Site-relative path e.g. /images/lodging/foo.jpg or full URL */
+  coverImage: z.string().optional(),
   checkInDate: isoDate,
   checkInTime: z.string().optional(),
   checkOutDate: isoDate,

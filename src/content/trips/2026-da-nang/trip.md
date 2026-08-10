@@ -44,6 +44,7 @@ lodgings:
     room: 기본 룸 3개 (성인 5 + 시온이 배정)
     address: Da Nang, Vietnam
     mapUrl: https://maps.google.com/?q=Novotel+Danang+Premier+Han+River
+    coverImage: /images/lodging/novotel-han-river.jpg
     checkInDate: 2026-09-04
     checkInTime: "15:00"
     checkOutDate: 2026-09-06
@@ -57,6 +58,7 @@ lodgings:
     room: 1베드룸 풀빌라 (3명) + 기본 룸 (3명)
     address: Da Nang, Vietnam
     mapUrl: https://maps.google.com/?q=Fusion+Resort+Da+Nang
+    coverImage: /images/lodging/fusion-resort.jpg
     checkInDate: 2026-09-06
     checkInTime: "15:00"
     checkOutDate: 2026-09-08
@@ -70,6 +72,7 @@ lodgings:
     room: 3베드룸 풀빌라
     address: Nam Hoi An, Quang Nam, Vietnam
     mapUrl: https://maps.google.com/?q=Vinpearl+Resort+Nam+Hoi+An
+    coverImage: /images/lodging/vinpearl-nam-hoi-an.jpg
     checkInDate: 2026-09-08
     checkInTime: "15:00"
     checkOutDate: 2026-09-10
