@@ -53,7 +53,7 @@ lodgings:
 
   - id: hotel-fusion-resort
     name: 퓨전 리조트 다낭
-    nameLocal: Fusion Resort Da Nang
+    nameLocal: Fusion Resort & Villas Da Nang
     area: 다낭 (리조트)
     room: 1베드룸 풀빌라 (3명) + 기본 룸 (3명)
     address: Da Nang, Vietnam
@@ -67,7 +67,7 @@ lodgings:
 
   - id: hotel-vinpearl-nam-hoi-an
     name: 빈펄 리조트 & 스파 남호이안
-    nameLocal: Vinpearl Resort & Spa Nam Hoi An
+    nameLocal: Vinpearl Resort & Golf Nam Hoi An
     area: 남호이안 (Nam Hoi An)
     room: 3베드룸 풀빌라
     address: Nam Hoi An, Quang Nam, Vietnam
