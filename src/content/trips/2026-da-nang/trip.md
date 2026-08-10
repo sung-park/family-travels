@@ -1,0 +1,113 @@
+---
+slug: 2026-da-nang
+title: 시온이와 다낭
+titleShort: 다낭
+destination:
+  countryKo: 베트남
+  cityKo: 다낭
+  countryCode: VN
+  airport: DAD
+startDate: 2026-09-04
+endDate: 2026-09-10
+timezone: Asia/Ho_Chi_Minh
+status: planned
+focusPersonId: sion
+updatedAt: 2026-08-10
+summary: |
+  시온이와 부모님, 친가 조부모님, 외할머니와 함께하는 다낭 여행.
+  대한항공 일정은 예약 확정. 숙소는 아직 미정입니다.
+tags:
+  - 베트남
+  - 다낭
+  - 가족
+
+participants:
+  - personId: sion
+    role: child
+  - personId: mom
+    role: organizer
+  - personId: dad
+    role: organizer
+  - personId: paternal-grandma
+    role: guest
+  - personId: paternal-grandpa
+    role: guest
+  - personId: maternal-grandma
+    role: guest
+
+lodgings:
+  - id: hotel-da-nang-tbd
+    name: 다낭 숙소 (TBD)
+    area: 미정 (미케 / 시내 / 호이안 등)
+    checkInDate: 2026-09-04
+    checkInTime: "15:00"
+    checkOutDate: 2026-09-10
+    checkOutTime: "12:00"
+    notesPublic: 숙소 미정. 확정 후 이름·주소·체크인 시각을 업데이트합니다. 귀국편 15:55 출발에 맞춰 체크아웃·공항 이동 여유를 둡니다.
+
+transports:
+  - id: flight-ke457-out
+    type: flight
+    label: 가는 편
+    operator: 대한항공
+    flightNumber: KE457
+    cabin: 일반석 세이버 (예약 등급 U)
+    from:
+      name: 서울/인천 터미널 2
+      code: ICN
+    to:
+      name: 다낭 터미널 2
+      code: DAD
+    departAt: "2026-09-04T11:40:00+09:00"
+    arriveAt: "2026-09-04T14:20:00+07:00"
+    notesPublic: 예약 확정. A321-neo · 약 4시간 40분. 기내 전원 공급. PNR·여권 정보는 사이트 미기재.
+
+  - id: flight-ke458-return
+    type: flight
+    label: 오는 편
+    operator: 대한항공
+    flightNumber: KE458
+    cabin: 일반석 세이버 (예약 등급 T)
+    from:
+      name: 다낭 터미널 2
+      code: DAD
+    to:
+      name: 서울/인천 터미널 2
+      code: ICN
+    departAt: "2026-09-10T15:55:00+07:00"
+    arriveAt: "2026-09-10T22:30:00+09:00"
+    notesPublic: 예약 확정. A321-neo · 약 4시간 35분. 오후 출발 — 당일 오전까지 여유 일정 가능.
+
+links:
+  - label: 주베트남 대한민국 대사관 (하노이) · 긴급 안내
+    url: https://overseas.mofa.go.kr/vn-ko/index.do
+    kind: emergency
+  - label: 주호치민 대한민국 총영사관 (중·남부 영사)
+    url: https://overseas.mofa.go.kr/vn-hcm-ko/index.do
+    kind: emergency
+  - label: 다낭 참고 (위키)
+    url: https://en.wikipedia.org/wiki/Da_Nang
+    kind: reference
+
+packing:
+  - item: 여권
+    for: all
+    essential: true
+  - item: 유아용 선크림·모자
+    for: [sion]
+    essential: true
+  - item: 수영복
+    for: all
+  - item: 편한 신발·가벼운 겉옷 (기내)
+    for: all
+    essential: true
+
+notesPublic:
+  - "대한항공 일정 예약 확정 (KE457 / KE458). 예약번호·여권은 사이트에 올리지 않습니다."
+  - "숙소는 미정 — 확정되는 대로 이 페이지에 반영합니다."
+  - "무더위·자외선 주의. 시온이·조부모 페이스를 우선합니다."
+  - "응급 — 베트남 경찰 113 · 응급의료 115. 호텔 프론트에 먼저 연락."
+---
+
+시온이와 함께하는 다낭 여행입니다.
+항공은 확정되었고, 숙소·현지 세부 일정은 정해지는 대로 채웁니다.
