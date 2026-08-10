@@ -7,6 +7,7 @@ import ParticipantChips from "../../components/ParticipantChips.astro";
 import SectionTitle from "../../components/SectionTitle.astro";
 import TodayHighlight from "../../components/TodayHighlight.astro";
 import TransportList from "../../components/TransportList.astro";
+import TripMap from "../../components/TripMap.astro";
 import {
   formatDateRangeKo,
   getTravelPhase,
@@ -102,6 +103,7 @@ const description =
         [
           { href: "#today-highlight", icon: "sparkle" as const, label: "오늘" },
           { href: "#sec-people", icon: "users" as const, label: "가족" },
+          { href: "#sec-map", icon: "mapPin" as const, label: "지도" },
           { href: "#sec-lodging", icon: "hotel" as const, label: "숙소" },
           { href: "#sec-transport", icon: "plane" as const, label: "항공" },
           { href: "#sec-days", icon: "calendar" as const, label: "일정" },
@@ -119,6 +121,8 @@ const description =
     </nav>
 
     <TodayHighlight trip={trip} days={days} />
+
+    <TripMap trip={trip} />
 
     <section class="space-y-3" aria-labelledby="sec-people">
       <SectionTitle

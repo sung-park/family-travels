@@ -7,6 +7,9 @@ destination:
   cityKo: 다낭
   countryCode: VN
   airport: DAD
+  airportName: 다낭 국제공항 (DAD)
+  airportLat: 16.0439
+  airportLng: 108.1994
 startDate: 2026-09-04
 endDate: 2026-09-10
 timezone: Asia/Ho_Chi_Minh
@@ -45,6 +48,8 @@ lodgings:
     address: Da Nang, Vietnam
     mapUrl: https://maps.google.com/?q=Novotel+Danang+Premier+Han+River
     coverImage: /images/lodging/novotel-han-river.jpg
+    lat: 16.0772
+    lng: 108.2233
     checkInDate: 2026-09-04
     checkInTime: "15:00"
     checkOutDate: 2026-09-06
@@ -59,6 +64,8 @@ lodgings:
     address: Da Nang, Vietnam
     mapUrl: https://maps.google.com/?q=Fusion+Resort+Da+Nang
     coverImage: /images/lodging/fusion-resort.jpg
+    lat: 15.9732
+    lng: 108.2828
     checkInDate: 2026-09-06
     checkInTime: "15:00"
     checkOutDate: 2026-09-08
@@ -73,6 +80,8 @@ lodgings:
     address: Nam Hoi An, Quang Nam, Vietnam
     mapUrl: https://maps.google.com/?q=Vinpearl+Resort+Nam+Hoi+An
     coverImage: /images/lodging/vinpearl-nam-hoi-an.jpg
+    lat: 15.7775
+    lng: 108.3965
     checkInDate: 2026-09-08
     checkInTime: "15:00"
     checkOutDate: 2026-09-10

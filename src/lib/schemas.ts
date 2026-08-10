@@ -73,6 +73,9 @@ export const lodgingSchema = z.object({
   mapUrl: z.string().url().optional(),
   /** Site-relative path e.g. /images/lodging/foo.jpg or full URL */
   coverImage: z.string().optional(),
+  /** WGS84 for trip map */
+  lat: z.number().optional(),
+  lng: z.number().optional(),
   checkInDate: isoDate,
   checkInTime: z.string().optional(),
   checkOutDate: isoDate,
@@ -121,6 +124,9 @@ export const tripSchema = z.object({
     cityKo: z.string().min(1),
     countryCode: z.string().optional(),
     airport: z.string().optional(),
+    airportName: z.string().optional(),
+    airportLat: z.number().optional(),
+    airportLng: z.number().optional(),
   }),
   startDate: isoDate,
   endDate: isoDate,

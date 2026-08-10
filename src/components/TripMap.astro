@@ -1,0 +1,313 @@
+---
+/**
+ * Interactive trip route map: airport → hotel 1 → 2 → 3 → airport.
+ * Leaflet + OSM (no API key). Client-only init.
+ */
+import type { TripData } from "../lib/schemas";
+import SectionTitle from "./SectionTitle.astro";
+import Icon from "./Icon.astro";
+import { formatDateKo } from "../lib/dates";
+
+interface Props {
+  trip: TripData;
+}
+
+const { trip } = Astro.props;
+
+const airportOk =
+  trip.destination.airportLat != null && trip.destination.airportLng != null;
+
+const hotels = trip.lodgings
+  .filter((l) => l.lat != null && l.lng != null)
+  .slice()
+  .sort((a, b) => a.checkInDate.localeCompare(b.checkInDate));
+
+const canRender = airportOk && hotels.length > 0;
+
+type MapPoint = {
+  kind: "airport" | "hotel";
+  num: string;
+  name: string;
+  sub: string;
+  lat: number;
+  lng: number;
+  color: string;
+  lodgingId?: string;
+};
+
+const points: MapPoint[] = [];
+
+if (airportOk) {
+  points.push({
+    kind: "airport",
+    num: "✈",
+    name: trip.destination.airportName ?? trip.destination.airport ?? "공항",
+    sub: "도착 · 귀국",
+    lat: trip.destination.airportLat!,
+    lng: trip.destination.airportLng!,
+    color: "#0369a1",
+  });
+}
+
+const hotelColors = ["#4f46e5", "#0d9488", "#c2410c"];
+
+hotels.forEach((h, i) => {
+  points.push({
+    kind: "hotel",
+    num: String(i + 1),
+    name: h.name,
+    sub: `${formatDateKo(h.checkInDate)} → ${formatDateKo(h.checkOutDate)}`,
+    lat: h.lat!,
+    lng: h.lng!,
+    color: hotelColors[i % hotelColors.length]!,
+    lodgingId: h.id,
+  });
+});
+
+// Route: airport → hotels in order → airport
+const routeLatLngs: [number, number][] = [];
+if (airportOk) {
+  routeLatLngs.push([
+    trip.destination.airportLat!,
+    trip.destination.airportLng!,
+  ]);
+}
+for (const h of hotels) {
+  routeLatLngs.push([h.lat!, h.lng!]);
+}
+if (airportOk && hotels.length > 0) {
+  routeLatLngs.push([
+    trip.destination.airportLat!,
+    trip.destination.airportLng!,
+  ]);
+}
+
+const mapPayload = { points, routeLatLngs };
+---
+
+{
+  canRender && (
+    <section class="space-y-3" aria-labelledby="sec-map">
+      <SectionTitle id="sec-map" icon="mapPin" title="동선 지도" tone="coral" />
+
+      <div class="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
+        <div
+          id="trip-route-map"
+          class="h-72 w-full z-0 sm:h-80"
+          data-map={JSON.stringify(mapPayload)}
+          role="img"
+          aria-label="공항과 숙소 1·2·3 동선 지도"
+        />
+
+        <ol class="divide-y divide-border border-t border-border">
+          <li class="flex items-start gap-3 px-4 py-3">
+            <span class="flex size-8 shrink-0 items-center justify-center rounded-full bg-sky-700 text-sm font-bold text-white">
+              ✈
+            </span>
+            <div class="min-w-0">
+              <p class="font-semibold text-ink">
+                {trip.destination.airportName ?? trip.destination.airport}
+              </p>
+              <p class="text-sm text-muted">도착 후 ①번 숙소로 이동 · 귀국 시 재진입</p>
+            </div>
+          </li>
+          {hotels.map((h, i) => (
+            <li class="flex items-start gap-3 px-4 py-3">
+              <span
+                class="flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
+                style={`background-color:${hotelColors[i % hotelColors.length]}`}
+              >
+                {i + 1}
+              </span>
+              <div class="min-w-0">
+                <a
+                  href={`#lodging-${h.id}`}
+                  class="font-semibold text-ink no-underline hover:text-brand-700"
+                >
+                  {h.name}
+                </a>
+                <p class="text-sm text-muted">
+                  {formatDateKo(h.checkInDate)} → {formatDateKo(h.checkOutDate)}
+                  {h.area ? ` · ${h.area}` : ""}
+                </p>
+              </div>
+              <Icon
+                name="chevronRight"
+                class="mt-1 size-4 shrink-0 text-muted"
+              />
+            </li>
+          ))}
+          <li class="flex items-start gap-3 bg-slate-50 px-4 py-3">
+            <span class="flex size-8 shrink-0 items-center justify-center rounded-full bg-sky-700 text-sm font-bold text-white">
+              ✈
+            </span>
+            <div class="min-w-0">
+              <p class="font-semibold text-ink">공항 귀국</p>
+              <p class="text-sm text-muted">
+                마지막 숙소 → {trip.destination.airport ?? "공항"}
+              </p>
+            </div>
+          </li>
+        </ol>
+      </div>
+
+      <p class="text-xs text-muted">
+        지도: OpenStreetMap · 위치는 공개 좌표 기준 대략값입니다. 내비는 각 숙소
+        「지도 보기」를 이용하세요.
+      </p>
+    </section>
+  )
+}
+
+<style is:global>
+  .trip-map-marker {
+    background: transparent;
+    border: none;
+  }
+  .trip-map-pin {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 9999px;
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.3);
+    border: 2px solid #fff;
+  }
+  .trip-map-pin--airport {
+    font-size: 13px;
+  }
+  .leaflet-container {
+    font-family: inherit;
+    background: #e2e8f0;
+  }
+</style>
+
+<script>
+  type MapPoint = {
+    kind: "airport" | "hotel";
+    num: string;
+    name: string;
+    sub: string;
+    lat: number;
+    lng: number;
+    color: string;
+    lodgingId?: string;
+  };
+
+  async function loadLeaflet(): Promise<any> {
+    // @ts-expect-error CDN global after load
+    if ((window as any).L) return (window as any).L;
+    await new Promise<void>((resolve, reject) => {
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+      link.integrity =
+        "sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=";
+      link.crossOrigin = "";
+      document.head.appendChild(link);
+
+      const script = document.createElement("script");
+      script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+      script.integrity =
+        "sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=";
+      script.crossOrigin = "";
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error("Leaflet load failed"));
+      document.head.appendChild(script);
+    });
+    // @ts-expect-error CDN global after load
+    return (window as any).L;
+  }
+
+  async function initMap() {
+    const el = document.getElementById("trip-route-map");
+    if (!el || el.dataset.ready === "1") return;
+    const raw = el.dataset.map;
+    if (!raw) return;
+
+    const { points, routeLatLngs } = JSON.parse(raw) as {
+      points: MapPoint[];
+      routeLatLngs: [number, number][];
+    };
+    if (!points.length) return;
+
+    try {
+      const L = await loadLeaflet();
+      el.dataset.ready = "1";
+
+      const map = L.map(el, { scrollWheelZoom: false });
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>',
+        maxZoom: 18,
+      }).addTo(map);
+
+      const bounds = L.latLngBounds([]);
+
+      for (const p of points) {
+        const html =
+          p.kind === "airport"
+            ? `<div class="trip-map-pin trip-map-pin--airport" style="background:${p.color}">✈</div>`
+            : `<div class="trip-map-pin" style="background:${p.color}">${p.num}</div>`;
+
+        const icon = L.divIcon({
+          className: "trip-map-marker",
+          html,
+          iconSize: [32, 32],
+          iconAnchor: [16, 16],
+          popupAnchor: [0, -16],
+        });
+
+        const marker = L.marker([p.lat, p.lng], { icon }).addTo(map);
+        const popupBody = p.lodgingId
+          ? `<strong>${p.name}</strong><br/><span style="color:#64748b;font-size:12px">${p.sub}</span><br/><a href="#lodging-${p.lodgingId}">숙소 상세 ↓</a>`
+          : `<strong>${p.name}</strong><br/><span style="color:#64748b;font-size:12px">${p.sub}</span>`;
+        marker.bindPopup(popupBody);
+        bounds.extend([p.lat, p.lng]);
+      }
+
+      if (routeLatLngs.length >= 2) {
+        L.polyline(routeLatLngs, {
+          color: "#0284c7",
+          weight: 4,
+          opacity: 0.85,
+          dashArray: "8 10",
+          lineJoin: "round",
+        }).addTo(map);
+
+        // Direction arrows as small circle mid-segments
+        for (let i = 0; i < routeLatLngs.length - 1; i++) {
+          const a = routeLatLngs[i]!;
+          const b = routeLatLngs[i + 1]!;
+          const mid: [number, number] = [
+            (a[0] + b[0]) / 2,
+            (a[1] + b[1]) / 2,
+          ];
+          L.circleMarker(mid, {
+            radius: 4,
+            color: "#0369a1",
+            fillColor: "#38bdf8",
+            fillOpacity: 1,
+            weight: 2,
+          }).addTo(map);
+        }
+      }
+
+      map.fitBounds(bounds.pad(0.18));
+    } catch (e) {
+      console.error(e);
+      el.innerHTML =
+        '<p style="padding:1.5rem;text-align:center;color:#64748b;font-size:0.875rem">지도를 불러오지 못했습니다. 네트워크를 확인해 주세요.</p>';
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => void initMap());
+  } else {
+    void initMap();
+  }
+</script>
