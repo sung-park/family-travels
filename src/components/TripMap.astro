@@ -199,8 +199,8 @@ const mapPayload = { points, routeLatLngs };
   };
 
   async function loadLeaflet(): Promise<any> {
-    // @ts-expect-error CDN global after load
-    if ((window as any).L) return (window as any).L;
+    const w = window as Window & { L?: any };
+    if (w.L) return w.L;
     await new Promise<void>((resolve, reject) => {
       const link = document.createElement("link");
       link.rel = "stylesheet";
@@ -219,8 +219,7 @@ const mapPayload = { points, routeLatLngs };
       script.onerror = () => reject(new Error("Leaflet load failed"));
       document.head.appendChild(script);
     });
-    // @ts-expect-error CDN global after load
-    return (window as any).L;
+    return (window as Window & { L?: any }).L;
   }
 
   async function initMap() {
