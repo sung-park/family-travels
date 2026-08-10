@@ -138,7 +138,25 @@ const fallbackGrad =
     </div>
     {
       lodging.notesPublic && (
-        <p class="text-sm leading-relaxed text-ink">{lodging.notesPublic}</p>
+        <div class="space-y-1.5 rounded-xl bg-slate-50 px-3 py-2.5 text-sm leading-relaxed text-ink">
+          {lodging.notesPublic
+            .split("\n")
+            .map((line) => line.trim())
+            .filter(Boolean)
+            .map((line) => (
+              <p>{line}</p>
+            ))}
+        </div>
+      )
+    }
+    {
+      lodging.phone && (
+        <a
+          href={`tel:${lodging.phone.replace(/\s/g, "")}`}
+          class="inline-flex min-h-11 items-center gap-2 rounded-xl bg-emerald-50 px-4 text-sm font-semibold text-emerald-900 no-underline"
+        >
+          📞 {lodging.phone}
+        </a>
       )
     }
     {
