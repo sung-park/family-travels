@@ -18,7 +18,7 @@ focusPersonId: sion
 updatedAt: 2026-08-11
 summary: |
   시온이와 부모님, 친가 조부모님, 외할머니와 함께하는 다낭·호이안 여행.
-  시내 노보텔 2박 후 남호이안 빈펄 4박(예약 확정 · 조식 6인 · VinWonders 6인 1회).
+  시내 센터 포인트 2박 후 남호이안 빈펄 4박(둘 다 Agoda 예약 확정).
 tags:
   - 베트남
   - 다낭
@@ -40,21 +40,30 @@ participants:
     role: guest
 
 lodgings:
-  - id: hotel-novotel-han-river
-    name: 노보텔 다낭 프리미어 한 리버
-    nameLocal: Novotel Danang Premier Han River
-    area: 다낭 시내 · 한강(한 리버)
-    room: 기본 룸 3개 (성인 5 + 시온이 배정)
-    address: Da Nang, Vietnam
-    mapUrl: https://maps.google.com/?q=Novotel+Danang+Premier+Han+River
-    coverImage: /images/lodging/novotel-han-river.jpg
-    lat: 16.0772
-    lng: 108.2233
+  - id: hotel-centre-point-danang
+    name: 센터 포인트 다낭 호텔 앤 레지던스
+    nameLocal: Centre Point Danang Hotel & Residence
+    area: 다낭 시내 · Thạch Thang / 한강 인근
+    room: "리버뷰 · 110m² · 퀸 1 + 킹 1 + 싱글 2 (성인 6)"
+    address: 02 Nguyễn Thị Minh Khai, Thạch Thang, Da Nang 550000
+    mapUrl: https://maps.google.com/?q=Centre+Point+Danang+Hotel+Residence
+    coverImage: /images/lodging/centre-point-danang.jpg
+    lat: 16.0745
+    lng: 108.2205
     checkInDate: 2026-09-04
-    checkInTime: "15:00"
+    checkInTime: "14:00"
     checkOutDate: 2026-09-06
     checkOutTime: "12:00"
-    notesPublic: 도착 직후 2박. 시내·한강 쪽. 기본방 3실.
+    phone: "+842363663939"
+    notesPublic: |
+      ✅ Agoda 예약 확정 (예약번호 1760****156). 대표 투숙객 PARKSUNGGEUN. 성인 6명.
+      요금제: Hotel offer — Free Afternoon Tea. 조식 포함. F&B 10% 할인.
+      포함: 프리미엄 Wi-Fi, 인피니티 풀·수영장, 피트니스, 주차, 웰컴 드링크, 애프터눈 티 등.
+      후지불: 2026-08-26 자동 결제 예정 (환율에 따라 원화 변동).
+      🆓 무료 취소: 다낭 현지시간 2026-08-27 23:59까지. 8/28 00:00부터 환불 불가. 노쇼 시 전액.
+      특별요청(금연·트윈): 체크인 시 여건에 따라 반영.
+      호텔: +84-236-366-3939 · 02 Nguyen Thi Minh Khai.
+      9/4 14:20 DAD 도착 후 체크인(14:00~). 9/6 빈펄로 이동.
 
   - id: hotel-vinpearl-nam-hoi-an
     name: 빈펄 리조트 & 골프 남호이안
@@ -144,7 +153,8 @@ packing:
 
 notesPublic:
   - "대한항공 일정 예약 확정 (KE457 / KE458). 예약번호·여권은 사이트에 올리지 않습니다."
-  - "숙소 2구간 — 노보텔(시내) 2박 → 남호이안 빈펄 4박(Agoda 확정). 이동 1번."
+  - "숙소 2구간 — 센터 포인트(시내) 2박 → 남호이안 빈펄 4박(둘 다 Agoda 확정). 이동 1번."
+  - "센터 포인트 무료 취소: 다낭 시간 2026-08-27 23:59까지. 결제 예정 2026-08-26."
   - "빈펄 무료 취소 기한: 호이안 시간 2026-09-02 23:59까지. 그 이후 환불 불가."
   - "빈펄 호텔 확답: 조식 6인 포함 · VinWonders 6명 1회(체크인 시 일정 선택)."
   - "호이안 투어는 오전·반나절 위주, 한낮 더위·시온이 낮잠 고려."
