@@ -279,22 +279,30 @@ const dayViews: DayView[] = days.map((d) => {
                   아래 중 <span class="text-ink">하루 한 코스만</span> 선택
                 </p>
 
+                {/*
+                  Side-by-side only when the page is wide enough (lg+).
+                  Below that, stack so text never collapses into a single glyph column.
+                */}
                 <div
                   class:list={[
-                    "grid gap-3",
-                    d.planBuckets.length > 1 && "md:grid-cols-2",
+                    "grid grid-cols-1 gap-4",
+                    d.planBuckets.length > 1 && "lg:grid-cols-2 lg:gap-5",
                   ]}
                 >
                   {d.planBuckets.map((bucket) => (
                     <section
-                      class={`overflow-hidden rounded-xl border ${bucket.tone.wrap}`}
+                      class={`min-w-0 overflow-hidden rounded-xl border ${bucket.tone.wrap}`}
                       aria-label={bucket.label}
                     >
                       <header
-                        class={`border-b border-black/5 px-3 py-2.5 ${bucket.tone.head}`}
+                        class={`border-b border-black/5 px-4 py-3 ${bucket.tone.head}`}
                       >
-                        <p class="text-sm font-bold">{bucket.label}</p>
-                        <p class="text-xs opacity-80">{bucket.blurb}</p>
+                        <p class="text-base font-bold break-keep">
+                          {bucket.label}
+                        </p>
+                        <p class="mt-0.5 text-sm opacity-80 break-keep">
+                          {bucket.blurb}
+                        </p>
                       </header>
                       <ActivityList
                         items={bucket.activities}

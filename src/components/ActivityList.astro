@@ -53,7 +53,7 @@ function activityImageSrc(path: string | undefined): string | null {
         <li
           class:list={[
             "relative",
-            compact ? "pb-3" : "pb-4",
+            compact ? "pb-4" : "pb-5",
             "last:pb-0",
           ]}
         >
@@ -64,31 +64,43 @@ function activityImageSrc(path: string | undefined): string | null {
               tone.dot,
             ]}
           />
+          {/*
+            Stack layout: time + text always full width, photo below.
+            Never put image beside text in narrow plan columns (that forced
+            Korean glyphs to wrap vertically).
+          */}
           <div class="flex gap-3 text-sm">
             <span
               class:list={[
-                "w-12 shrink-0 tabular-nums font-bold",
+                "w-12 shrink-0 tabular-nums font-bold leading-6",
                 tone.time,
               ]}
             >
               {a.time ?? "—"}
             </span>
-            <div class="min-w-0 flex-1">
-              <p class="font-semibold text-ink">{a.displayTitle}</p>
+            <div class="min-w-0 flex-1 space-y-1.5 overflow-hidden">
+              <p class="font-semibold leading-snug break-keep text-ink">
+                {a.displayTitle}
+              </p>
               {a.place && (
-                <p class="mt-0.5 flex items-center gap-1 text-muted">
-                  <Icon name="mapPin" class="size-3.5 shrink-0" />
-                  {a.place}
+                <p class="flex items-start gap-1 leading-snug break-keep text-muted">
+                  <Icon name="mapPin" class="mt-0.5 size-3.5 shrink-0" />
+                  <span class="min-w-0">{a.place}</span>
                 </p>
               )}
-              {a.notes && <p class="mt-0.5 text-muted">{a.notes}</p>}
+              {a.notes && (
+                <p class="leading-relaxed break-keep text-muted">{a.notes}</p>
+              )}
               {who && (
-                <p class="mt-1 text-xs font-medium text-violet-700">
-                  👥 {who}
-                </p>
+                <p class="text-xs font-medium text-violet-700">👥 {who}</p>
               )}
               {img && (
-                <div class="mt-2 overflow-hidden rounded-xl border border-black/5 shadow-sm sm:hidden">
+                <div
+                  class:list={[
+                    "overflow-hidden rounded-xl border border-black/5 bg-slate-100 shadow-sm",
+                    compact ? "mt-2 max-w-sm" : "mt-2 max-w-md",
+                  ]}
+                >
                   <img
                     src={img}
                     alt={a.place ?? a.displayTitle}
@@ -99,17 +111,6 @@ function activityImageSrc(path: string | undefined): string | null {
                 </div>
               )}
             </div>
-            {img && (
-              <div class="hidden w-24 shrink-0 overflow-hidden rounded-xl border border-black/5 shadow-sm sm:block sm:w-28">
-                <img
-                  src={img}
-                  alt={a.place ?? a.displayTitle}
-                  class="aspect-[4/3] size-full object-cover"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </div>
-            )}
           </div>
         </li>
       );

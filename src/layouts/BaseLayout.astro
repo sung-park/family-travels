@@ -31,7 +31,7 @@ const aboutHref = withBase("about/");
   <body class="flex min-h-dvh flex-col">
     <header class="sticky top-0 z-40 border-b border-border/80 bg-surface/90 backdrop-blur-md">
       <div
-        class="mx-auto flex max-w-lg items-center justify-between gap-3 px-4 py-3"
+        class="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8"
       >
         <a
           href={homeHref}
@@ -63,12 +63,12 @@ const aboutHref = withBase("about/");
       </div>
     </header>
 
-    <main class="mx-auto w-full max-w-lg flex-1 px-4 py-6">
+    <main class="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
       <slot />
     </main>
 
     <footer class="mt-auto border-t border-border bg-surface/80">
-      <div class="mx-auto max-w-lg px-4 py-5 text-sm text-muted">
+      <div class="mx-auto w-full max-w-5xl px-4 py-5 text-sm text-muted sm:px-6 lg:px-8">
         <p class="mb-1 flex items-center gap-2 font-medium text-ink">
           <Icon name="sparkle" class="size-4 text-amber-400" />
           시온이와 함께하는 가족 여행

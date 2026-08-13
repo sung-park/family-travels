@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Family-travels: warmer, more visual mobile-first UI */
+/* Family-travels: desktop-friendly fluid layout, readable Korean type */
 @theme {
   --font-sans: "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
     ui-sans-serif, system-ui, sans-serif;
@@ -40,13 +40,27 @@
 
   body {
     @apply min-h-dvh bg-canvas font-sans text-ink antialiased;
-    font-size: 17px;
-    line-height: 1.6;
+    font-size: 16px;
+    line-height: 1.65;
+    word-break: keep-all;
+    overflow-wrap: break-word;
     background-color: #f4f7fb;
     background-image:
       radial-gradient(ellipse 120% 80% at 100% -20%, #dbeafe 0%, transparent 50%),
       radial-gradient(ellipse 80% 50% at 0% 100%, #ffedd5 0%, transparent 45%);
     background-attachment: fixed;
+  }
+
+  @media (min-width: 640px) {
+    body {
+      font-size: 17px;
+    }
+  }
+
+  /* Prefer keeping Korean words together; still allow wrap when needed */
+  .break-keep {
+    word-break: keep-all;
+    overflow-wrap: anywhere;
   }
 
   a {
