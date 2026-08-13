@@ -14,6 +14,7 @@ import {
   phaseLabelKo,
   todayInTimeZone,
 } from "../../lib/dates";
+import { splitFreeCancelHighlight } from "../../lib/highlight";
 import { getPeopleMap } from "../../lib/people";
 import { getAllTripBundles, getTripBundle } from "../../lib/trip";
 
@@ -252,7 +253,17 @@ const description =
             {trip.notesPublic.map((n) => (
               <li class="flex gap-2 rounded-xl bg-amber-50 px-3 py-2.5 text-sm text-ink">
                 <span aria-hidden="true">📝</span>
-                <span>{n}</span>
+                <span>
+                  {splitFreeCancelHighlight(n).map((part) =>
+                    part.highlight ? (
+                      <span class="font-bold text-red-600 underline decoration-2 underline-offset-2 decoration-red-600">
+                        {part.text}
+                      </span>
+                    ) : (
+                      part.text
+                    ),
+                  )}
+                </span>
               </li>
             ))}
           </ul>

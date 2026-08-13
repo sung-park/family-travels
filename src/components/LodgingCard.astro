@@ -1,5 +1,6 @@
 ---
 import { formatDateKo } from "../lib/dates";
+import { splitFreeCancelHighlight } from "../lib/highlight";
 import type { Lodging } from "../lib/schemas";
 import { withBase } from "../lib/paths";
 import Icon from "./Icon.astro";
@@ -144,7 +145,17 @@ const fallbackGrad =
             .map((line) => line.trim())
             .filter(Boolean)
             .map((line) => (
-              <p>{line}</p>
+              <p>
+                {splitFreeCancelHighlight(line).map((part) =>
+                  part.highlight ? (
+                    <span class="font-bold text-red-600 underline decoration-2 underline-offset-2 decoration-red-600">
+                      {part.text}
+                    </span>
+                  ) : (
+                    part.text
+                  ),
+                )}
+              </p>
             ))}
         </div>
       )
