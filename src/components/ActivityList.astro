@@ -1,0 +1,118 @@
+---
+import { withBase } from "../lib/paths";
+import type { DayData, Person } from "../lib/schemas";
+import Icon from "./Icon.astro";
+
+type Activity = DayData["activities"][number];
+
+export interface ActivityItem extends Activity {
+  displayTitle: string;
+}
+
+export interface ActivityTone {
+  rail: string;
+  dot: string;
+  time: string;
+}
+
+interface Props {
+  items: ActivityItem[];
+  tone: ActivityTone;
+  compact?: boolean;
+  peopleById: Map<string, Person>;
+}
+
+const { items, tone, compact = false, peopleById } = Astro.props;
+
+function peopleLabel(ids: string[] | undefined): string | null {
+  if (!ids || ids.length === 0) return null;
+  return ids
+    .map((id) => peopleById.get(id)?.nameShort ?? id)
+    .join(" · ");
+}
+
+function activityImageSrc(path: string | undefined): string | null {
+  if (!path) return null;
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+  return withBase(path.replace(/^\//, ""));
+}
+---
+
+<ul
+  class:list={[
+    "relative space-y-0 border-l-2",
+    tone.rail,
+    compact ? "px-3 py-3 pl-7" : "pl-4",
+  ]}
+>
+  {
+    items.map((a) => {
+      const who = peopleLabel(a.peopleIds);
+      const img = activityImageSrc(a.image);
+      return (
+        <li
+          class:list={[
+            "relative",
+            compact ? "pb-3" : "pb-4",
+            "last:pb-0",
+          ]}
+        >
+          <span
+            class:list={[
+              "absolute top-1.5 size-2.5 rounded-full ring-4 ring-white",
+              compact ? "-left-[1.05rem]" : "-left-[1.3rem]",
+              tone.dot,
+            ]}
+          />
+          <div class="flex gap-3 text-sm">
+            <span
+              class:list={[
+                "w-12 shrink-0 tabular-nums font-bold",
+                tone.time,
+              ]}
+            >
+              {a.time ?? "—"}
+            </span>
+            <div class="min-w-0 flex-1">
+              <p class="font-semibold text-ink">{a.displayTitle}</p>
+              {a.place && (
+                <p class="mt-0.5 flex items-center gap-1 text-muted">
+                  <Icon name="mapPin" class="size-3.5 shrink-0" />
+                  {a.place}
+                </p>
+              )}
+              {a.notes && <p class="mt-0.5 text-muted">{a.notes}</p>}
+              {who && (
+                <p class="mt-1 text-xs font-medium text-violet-700">
+                  👥 {who}
+                </p>
+              )}
+              {img && (
+                <div class="mt-2 overflow-hidden rounded-xl border border-black/5 shadow-sm sm:hidden">
+                  <img
+                    src={img}
+                    alt={a.place ?? a.displayTitle}
+                    class="aspect-[16/10] w-full object-cover"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+              )}
+            </div>
+            {img && (
+              <div class="hidden w-24 shrink-0 overflow-hidden rounded-xl border border-black/5 shadow-sm sm:block sm:w-28">
+                <img
+                  src={img}
+                  alt={a.place ?? a.displayTitle}
+                  class="aspect-[4/3] size-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+            )}
+          </div>
+        </li>
+      );
+    })
+  }
+</ul>

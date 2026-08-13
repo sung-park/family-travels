@@ -1,8 +1,9 @@
 ---
 import { formatDateKo } from "../lib/dates";
-import { withBase } from "../lib/paths";
-import type { DayData, Person, TripData } from "../lib/schemas";
+import type { DayData, Lodging, Person, TripData } from "../lib/schemas";
 import { lodgingById } from "../lib/trip";
+import ActivityList from "./ActivityList.astro";
+import type { ActivityItem, ActivityTone } from "./ActivityList.astro";
 import Icon from "./Icon.astro";
 
 interface Props {
@@ -13,12 +14,6 @@ interface Props {
 
 const { days, trip, peopleById } = Astro.props;
 
-function activityImageSrc(path: string | undefined): string | null {
-  if (!path) return null;
-  if (path.startsWith("http://") || path.startsWith("https://")) return path;
-  return withBase(path.replace(/^\//, ""));
-}
-
 type Activity = DayData["activities"][number];
 type PlanKey = "common" | "plan1" | "plan2";
 
@@ -26,13 +21,10 @@ interface PlanBucket {
   key: PlanKey;
   label: string;
   blurb: string;
-  activities: Array<Activity & { displayTitle: string }>;
-  tone: {
+  activities: ActivityItem[];
+  tone: ActivityTone & {
     wrap: string;
     head: string;
-    rail: string;
-    dot: string;
-    time: string;
   };
 }
 
@@ -40,14 +32,7 @@ const PLAN1_RE = /^【\s*1안\s*】\s*/;
 const PLAN2_RE = /^【\s*2안\s*】\s*/;
 const COMMON_SUFFIX_RE = /\s*\(공통\)\s*$/;
 
-function peopleLabel(ids: string[] | undefined): string | null {
-  if (!ids || ids.length === 0) return null;
-  return ids
-    .map((id) => peopleById.get(id)?.nameShort ?? id)
-    .join(" · ");
-}
-
-const commonTone = {
+const commonTone: ActivityTone & { wrap: string; head: string } = {
   wrap: "border-border bg-white",
   head: "bg-slate-50 text-slate-800",
   rail: "border-sky-200",
@@ -55,10 +40,7 @@ const commonTone = {
   time: "text-sky-700",
 };
 
-function emptyCommon(
-  label: string,
-  blurb: string,
-): PlanBucket {
+function emptyCommon(label: string, blurb: string): PlanBucket {
   return {
     key: "common",
     label,
@@ -132,16 +114,14 @@ function splitPlans(activities: Activity[]): {
       });
       return;
     }
-    const item = {
+    const item: ActivityItem = {
       ...a,
       displayTitle: a.title.replace(COMMON_SUFFIX_RE, ""),
     };
-    // Shared items after the plan block (e.g. resort check-in) go below
     if (firstPlan >= 0 && i > lastPlan) commonAfter.activities.push(item);
     else commonBefore.activities.push(item);
   });
 
-  // Cleaner labels when only one common block exists
   if (commonAfter.activities.length === 0) {
     commonBefore.label = "공통";
   }
@@ -164,6 +144,46 @@ const moodEmoji: Record<string, string> = {
   rest: "😌",
   family: "👨‍👩‍👧‍👦",
 };
+
+interface DayView {
+  date: string;
+  dayIndex?: number;
+  title: string;
+  summary?: string;
+  body?: string;
+  emoji: string;
+  lodging?: Lodging;
+  hasPlans: boolean;
+  plainItems: ActivityItem[];
+  commonBefore: PlanBucket;
+  commonAfter: PlanBucket;
+  planBuckets: PlanBucket[];
+}
+
+const dayViews: DayView[] = days.map((d) => {
+  const lodging = lodgingById(trip, d.lodgingId);
+  const emoji = (d.mood && moodEmoji[d.mood]) || "📅";
+  const { commonBefore, commonAfter, plan1, plan2, hasPlans } = splitPlans(
+    d.activities,
+  );
+  const planBuckets = [plan1, plan2].filter((b) => b.activities.length > 0);
+  const plainItems = [...commonBefore.activities, ...commonAfter.activities];
+
+  return {
+    date: d.date,
+    dayIndex: d.dayIndex,
+    title: d.title,
+    summary: d.summary,
+    body: d.body,
+    emoji,
+    lodging,
+    hasPlans,
+    plainItems,
+    commonBefore,
+    commonAfter,
+    planBuckets,
+  };
+});
 ---
 
 <div class="space-y-3">
@@ -173,7 +193,7 @@ const moodEmoji: Record<string, string> = {
     aria-label="날짜 바로가기"
   >
     {
-      days.map((d) => (
+      dayViews.map((d) => (
         <a
           href={`#day-${d.date}`}
           class="inline-flex min-h-11 shrink-0 flex-col items-center justify-center rounded-2xl border border-border bg-surface px-3 py-1.5 text-ink no-underline shadow-sm hover:border-brand-600 hover:bg-brand-50"
@@ -191,184 +211,136 @@ const moodEmoji: Record<string, string> = {
 
   <ol class="space-y-4">
     {
-      days.map((d) => {
-        const lodging = lodgingById(trip, d.lodgingId);
-        const emoji = (d.mood && moodEmoji[d.mood]) || "📅";
-        const { commonBefore, commonAfter, plan1, plan2, hasPlans } =
-          splitPlans(d.activities);
-        const planBuckets = [plan1, plan2].filter((b) => b.activities.length > 0);
-        const plainCommon = [...commonBefore.activities, ...commonAfter.activities];
-
-        function renderActivityList(
-          items: Array<Activity & { displayTitle: string }>,
-          tone: PlanBucket["tone"],
-          compact: boolean,
-        ) {
-          return (
-            <ul
-              class:list={[
-                "relative space-y-0 border-l-2",
-                tone.rail,
-                compact ? "px-3 py-3 pl-7" : "pl-4",
-              ]}
+      dayViews.map((d) => (
+        <li
+          id={`day-${d.date}`}
+          class="card-lift scroll-mt-24 overflow-hidden rounded-2xl border border-border bg-surface shadow-sm"
+        >
+          <div class="flex items-center gap-3 border-b border-border bg-gradient-to-r from-slate-50 to-sky-50 px-4 py-3">
+            <span
+              class="flex size-11 items-center justify-center rounded-2xl bg-white text-2xl shadow-sm ring-1 ring-border"
+              aria-hidden="true"
             >
-              {items.map((a) => {
-                const who = peopleLabel(a.peopleIds);
-                const img = activityImageSrc(a.image);
-                return (
-                  <li class:list={["relative", compact ? "pb-3" : "pb-4", "last:pb-0"]}>
-                    <span
-                      class:list={[
-                        "absolute top-1.5 size-2.5 rounded-full ring-4 ring-white",
-                        compact ? "-left-[1.05rem]" : "-left-[1.3rem]",
-                        tone.dot,
-                      ]}
-                    />
-                    <div class="flex gap-3 text-sm">
-                      <span
-                        class:list={[
-                          "w-12 shrink-0 tabular-nums font-bold",
-                          tone.time,
-                        ]}
-                      >
-                        {a.time ?? "—"}
-                      </span>
-                      <div class="min-w-0 flex-1">
-                        <p class="font-semibold text-ink">{a.displayTitle}</p>
-                        {a.place && (
-                          <p class="mt-0.5 flex items-center gap-1 text-muted">
-                            <Icon name="mapPin" class="size-3.5 shrink-0" />
-                            {a.place}
-                          </p>
-                        )}
-                        {a.notes && <p class="mt-0.5 text-muted">{a.notes}</p>}
-                        {who && (
-                          <p class="mt-1 text-xs font-medium text-violet-700">
-                            👥 {who}
-                          </p>
-                        )}
-                        {img && (
-                          <div class="mt-2 overflow-hidden rounded-xl border border-black/5 shadow-sm sm:hidden">
-                            <img
-                              src={img}
-                              alt={a.place ?? a.displayTitle}
-                              class="aspect-[16/10] w-full object-cover"
-                              loading="lazy"
-                              decoding="async"
-                            />
-                          </div>
-                        )}
-                      </div>
-                      {img && (
-                        <div class="hidden w-24 shrink-0 overflow-hidden rounded-xl border border-black/5 shadow-sm sm:block sm:w-28">
-                          <img
-                            src={img}
-                            alt={a.place ?? a.displayTitle}
-                            class="aspect-[4/3] size-full object-cover"
-                            loading="lazy"
-                            decoding="async"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          );
-        }
-
-        function renderBucket(bucket: PlanBucket) {
-          if (bucket.activities.length === 0) return null;
-          return (
-            <section
-              class={`overflow-hidden rounded-xl border ${bucket.tone.wrap}`}
-              aria-label={bucket.label}
-            >
-              <header
-                class={`border-b border-black/5 px-3 py-2.5 ${bucket.tone.head}`}
-              >
-                <p class="text-sm font-bold">{bucket.label}</p>
-                <p class="text-xs opacity-80">{bucket.blurb}</p>
-              </header>
-              {renderActivityList(bucket.activities, bucket.tone, true)}
-            </section>
-          );
-        }
-
-        return (
-          <li
-            id={`day-${d.date}`}
-            class="card-lift scroll-mt-24 overflow-hidden rounded-2xl border border-border bg-surface shadow-sm"
-          >
-            <div class="flex items-center gap-3 border-b border-border bg-gradient-to-r from-slate-50 to-sky-50 px-4 py-3">
-              <span
-                class="flex size-11 items-center justify-center rounded-2xl bg-white text-2xl shadow-sm ring-1 ring-border"
-                aria-hidden="true"
-              >
-                {emoji}
-              </span>
-              <div class="min-w-0">
-                <p class="text-xs font-medium text-muted">
-                  {formatDateKo(d.date)}
-                  {d.dayIndex != null && ` · ${d.dayIndex}일차`}
-                </p>
-                <h3 class="truncate text-lg font-bold text-ink">{d.title}</h3>
-              </div>
+              {d.emoji}
+            </span>
+            <div class="min-w-0">
+              <p class="text-xs font-medium text-muted">
+                {formatDateKo(d.date)}
+                {d.dayIndex != null && ` · ${d.dayIndex}일차`}
+              </p>
+              <h3 class="truncate text-lg font-bold text-ink">{d.title}</h3>
             </div>
+          </div>
 
-            <div class="space-y-3 p-4">
-              {d.summary && <p class="text-sm text-muted">{d.summary}</p>}
-              {lodging && (
-                <a
-                  href={`#lodging-${lodging.id}`}
-                  class="flex items-center gap-2 rounded-xl bg-teal-50 px-3 py-2 text-sm font-medium text-teal-900 no-underline"
-                >
-                  <Icon name="hotel" class="size-4 shrink-0 text-teal-700" />
-                  <span class="truncate">{lodging.name}</span>
-                </a>
-              )}
+          <div class="space-y-3 p-4">
+            {d.summary && <p class="text-sm text-muted">{d.summary}</p>}
+            {d.lodging && (
+              <a
+                href={`#lodging-${d.lodging.id}`}
+                class="flex items-center gap-2 rounded-xl bg-teal-50 px-3 py-2 text-sm font-medium text-teal-900 no-underline"
+              >
+                <Icon name="hotel" class="size-4 shrink-0 text-teal-700" />
+                <span class="truncate">{d.lodging.name}</span>
+              </a>
+            )}
 
-              {/* No plan split: plain single timeline */}
-              {!hasPlans && plainCommon.length > 0 &&
-                renderActivityList(plainCommon, commonTone, false)}
+            {!d.hasPlans && d.plainItems.length > 0 && (
+              <ActivityList
+                items={d.plainItems}
+                tone={commonTone}
+                compact={false}
+                peopleById={peopleById}
+              />
+            )}
 
-              {/* Split view: common → pick one plan → common after */}
-              {hasPlans && (
-                <div class="space-y-3">
-                  {renderBucket(commonBefore)}
-
-                  <p class="text-center text-xs font-semibold tracking-wide text-muted">
-                    아래 중 <span class="text-ink">하루 한 코스만</span> 선택
-                  </p>
-
-                  <div
-                    class:list={[
-                      "grid gap-3",
-                      planBuckets.length > 1 && "md:grid-cols-2",
-                    ]}
+            {d.hasPlans && (
+              <div class="space-y-3">
+                {d.commonBefore.activities.length > 0 && (
+                  <section
+                    class={`overflow-hidden rounded-xl border ${d.commonBefore.tone.wrap}`}
+                    aria-label={d.commonBefore.label}
                   >
-                    {planBuckets.map((bucket) => renderBucket(bucket))}
-                  </div>
+                    <header
+                      class={`border-b border-black/5 px-3 py-2.5 ${d.commonBefore.tone.head}`}
+                    >
+                      <p class="text-sm font-bold">{d.commonBefore.label}</p>
+                      <p class="text-xs opacity-80">{d.commonBefore.blurb}</p>
+                    </header>
+                    <ActivityList
+                      items={d.commonBefore.activities}
+                      tone={d.commonBefore.tone}
+                      compact
+                      peopleById={peopleById}
+                    />
+                  </section>
+                )}
 
-                  {renderBucket(commonAfter)}
-                </div>
-              )}
+                <p class="text-center text-xs font-semibold tracking-wide text-muted">
+                  아래 중 <span class="text-ink">하루 한 코스만</span> 선택
+                </p>
 
-              {d.body?.trim() && (
-                <div class="rounded-xl bg-slate-50 px-3 py-2.5 text-sm leading-relaxed text-muted">
-                  {d.body
-                    .trim()
-                    .split(/\n+/)
-                    .map((para) => (
-                      <p class="mb-1.5 last:mb-0">{para}</p>
-                    ))}
+                <div
+                  class:list={[
+                    "grid gap-3",
+                    d.planBuckets.length > 1 && "md:grid-cols-2",
+                  ]}
+                >
+                  {d.planBuckets.map((bucket) => (
+                    <section
+                      class={`overflow-hidden rounded-xl border ${bucket.tone.wrap}`}
+                      aria-label={bucket.label}
+                    >
+                      <header
+                        class={`border-b border-black/5 px-3 py-2.5 ${bucket.tone.head}`}
+                      >
+                        <p class="text-sm font-bold">{bucket.label}</p>
+                        <p class="text-xs opacity-80">{bucket.blurb}</p>
+                      </header>
+                      <ActivityList
+                        items={bucket.activities}
+                        tone={bucket.tone}
+                        compact
+                        peopleById={peopleById}
+                      />
+                    </section>
+                  ))}
                 </div>
-              )}
-            </div>
-          </li>
-        );
-      })
+
+                {d.commonAfter.activities.length > 0 && (
+                  <section
+                    class={`overflow-hidden rounded-xl border ${d.commonAfter.tone.wrap}`}
+                    aria-label={d.commonAfter.label}
+                  >
+                    <header
+                      class={`border-b border-black/5 px-3 py-2.5 ${d.commonAfter.tone.head}`}
+                    >
+                      <p class="text-sm font-bold">{d.commonAfter.label}</p>
+                      <p class="text-xs opacity-80">{d.commonAfter.blurb}</p>
+                    </header>
+                    <ActivityList
+                      items={d.commonAfter.activities}
+                      tone={d.commonAfter.tone}
+                      compact
+                      peopleById={peopleById}
+                    />
+                  </section>
+                )}
+              </div>
+            )}
+
+            {d.body?.trim() && (
+              <div class="rounded-xl bg-slate-50 px-3 py-2.5 text-sm leading-relaxed text-muted">
+                {d.body
+                  .trim()
+                  .split(/\n+/)
+                  .map((para) => (
+                    <p class="mb-1.5 last:mb-0">{para}</p>
+                  ))}
+              </div>
+            )}
+          </div>
+        </li>
+      ))
     }
   </ol>
 </div>
