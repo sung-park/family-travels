@@ -43,6 +43,8 @@ export const activitySchema = z.object({
   title: z.string().min(1),
   place: z.string().optional(),
   notes: z.string().optional(),
+  /** Site-relative path e.g. /images/places/hoi-an.jpg — attraction thumbnail */
+  image: z.string().optional(),
   /** omit or [] = all; non-empty = subset */
   peopleIds: z.array(z.string()).optional(),
 });

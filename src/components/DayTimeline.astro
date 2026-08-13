@@ -1,5 +1,6 @@
 ---
 import { formatDateKo } from "../lib/dates";
+import { withBase } from "../lib/paths";
 import type { DayData, Person, TripData } from "../lib/schemas";
 import { lodgingById } from "../lib/trip";
 import Icon from "./Icon.astro";
@@ -11,6 +12,12 @@ interface Props {
 }
 
 const { days, trip, peopleById } = Astro.props;
+
+function activityImageSrc(path: string | undefined): string | null {
+  if (!path) return null;
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+  return withBase(path.replace(/^\//, ""));
+}
 
 type Activity = DayData["activities"][number];
 type PlanKey = "common" | "plan1" | "plan2";
@@ -207,6 +214,7 @@ const moodEmoji: Record<string, string> = {
             >
               {items.map((a) => {
                 const who = peopleLabel(a.peopleIds);
+                const img = activityImageSrc(a.image);
                 return (
                   <li class:list={["relative", compact ? "pb-3" : "pb-4", "last:pb-0"]}>
                     <span
@@ -225,7 +233,7 @@ const moodEmoji: Record<string, string> = {
                       >
                         {a.time ?? "—"}
                       </span>
-                      <div class="min-w-0">
+                      <div class="min-w-0 flex-1">
                         <p class="font-semibold text-ink">{a.displayTitle}</p>
                         {a.place && (
                           <p class="mt-0.5 flex items-center gap-1 text-muted">
@@ -239,7 +247,29 @@ const moodEmoji: Record<string, string> = {
                             👥 {who}
                           </p>
                         )}
+                        {img && (
+                          <div class="mt-2 overflow-hidden rounded-xl border border-black/5 shadow-sm sm:hidden">
+                            <img
+                              src={img}
+                              alt={a.place ?? a.displayTitle}
+                              class="aspect-[16/10] w-full object-cover"
+                              loading="lazy"
+                              decoding="async"
+                            />
+                          </div>
+                        )}
                       </div>
+                      {img && (
+                        <div class="hidden w-24 shrink-0 overflow-hidden rounded-xl border border-black/5 shadow-sm sm:block sm:w-28">
+                          <img
+                            src={img}
+                            alt={a.place ?? a.displayTitle}
+                            class="aspect-[4/3] size-full object-cover"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </div>
+                      )}
                     </div>
                   </li>
                 );
