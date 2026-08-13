@@ -122,6 +122,16 @@ const moodEmoji: Record<string, string> = {
                   })}
                 </ul>
               )}
+              {d.body?.trim() && (
+                <div class="rounded-xl bg-slate-50 px-3 py-2.5 text-sm leading-relaxed text-muted">
+                  {d.body
+                    .trim()
+                    .split(/\n+/)
+                    .map((para) => (
+                      <p class="mb-1.5 last:mb-0">{para}</p>
+                    ))}
+                </div>
+              )}
             </div>
           </li>
         );
