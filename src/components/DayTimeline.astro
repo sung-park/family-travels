@@ -12,11 +12,144 @@ interface Props {
 
 const { days, trip, peopleById } = Astro.props;
 
+type Activity = DayData["activities"][number];
+type PlanKey = "common" | "plan1" | "plan2";
+
+interface PlanBucket {
+  key: PlanKey;
+  label: string;
+  blurb: string;
+  activities: Array<Activity & { displayTitle: string }>;
+  tone: {
+    wrap: string;
+    head: string;
+    rail: string;
+    dot: string;
+    time: string;
+  };
+}
+
+const PLAN1_RE = /^【\s*1안\s*】\s*/;
+const PLAN2_RE = /^【\s*2안\s*】\s*/;
+const COMMON_SUFFIX_RE = /\s*\(공통\)\s*$/;
+
 function peopleLabel(ids: string[] | undefined): string | null {
   if (!ids || ids.length === 0) return null;
   return ids
     .map((id) => peopleById.get(id)?.nameShort ?? id)
     .join(" · ");
+}
+
+const commonTone = {
+  wrap: "border-border bg-white",
+  head: "bg-slate-50 text-slate-800",
+  rail: "border-sky-200",
+  dot: "bg-sky-500",
+  time: "text-sky-700",
+};
+
+function emptyCommon(
+  label: string,
+  blurb: string,
+): PlanBucket {
+  return {
+    key: "common",
+    label,
+    blurb,
+    activities: [],
+    tone: commonTone,
+  };
+}
+
+function splitPlans(activities: Activity[]): {
+  commonBefore: PlanBucket;
+  commonAfter: PlanBucket;
+  plan1: PlanBucket;
+  plan2: PlanBucket;
+  hasPlans: boolean;
+} {
+  const commonBefore = emptyCommon(
+    "공통 (먼저)",
+    "어느 안을 골라도 같이 하는 일정",
+  );
+  const commonAfter = emptyCommon(
+    "공통 (이후)",
+    "코스 선택 후 다시 합류하는 일정",
+  );
+  const plan1: PlanBucket = {
+    key: "plan1",
+    label: "1안 · 완벽한 휴식",
+    blurb: "동선 최소 · 마사지 · 유람선",
+    activities: [],
+    tone: {
+      wrap: "border-emerald-200 bg-emerald-50/40",
+      head: "bg-emerald-100/80 text-emerald-950",
+      rail: "border-emerald-300",
+      dot: "bg-emerald-600",
+      time: "text-emerald-800",
+    },
+  };
+  const plan2: PlanBucket = {
+    key: "plan2",
+    label: "2안 · 뷰·미식",
+    blurb: "선짜 · 씨푸드 · 야시장·용다리",
+    activities: [],
+    tone: {
+      wrap: "border-violet-200 bg-violet-50/40",
+      head: "bg-violet-100/80 text-violet-950",
+      rail: "border-violet-300",
+      dot: "bg-violet-600",
+      time: "text-violet-800",
+    },
+  };
+
+  const planIndexes: number[] = [];
+  activities.forEach((a, i) => {
+    if (PLAN1_RE.test(a.title) || PLAN2_RE.test(a.title)) planIndexes.push(i);
+  });
+  const firstPlan = planIndexes.length ? Math.min(...planIndexes) : -1;
+  const lastPlan = planIndexes.length ? Math.max(...planIndexes) : -1;
+
+  activities.forEach((a, i) => {
+    if (PLAN1_RE.test(a.title)) {
+      plan1.activities.push({
+        ...a,
+        displayTitle: a.title.replace(PLAN1_RE, ""),
+      });
+      return;
+    }
+    if (PLAN2_RE.test(a.title)) {
+      plan2.activities.push({
+        ...a,
+        displayTitle: a.title.replace(PLAN2_RE, ""),
+      });
+      return;
+    }
+    const item = {
+      ...a,
+      displayTitle: a.title.replace(COMMON_SUFFIX_RE, ""),
+    };
+    // Shared items after the plan block (e.g. resort check-in) go below
+    if (firstPlan >= 0 && i > lastPlan) commonAfter.activities.push(item);
+    else commonBefore.activities.push(item);
+  });
+
+  // Cleaner labels when only one common block exists
+  if (commonAfter.activities.length === 0) {
+    commonBefore.label = "공통";
+  }
+  if (commonBefore.activities.length === 0 && commonAfter.activities.length) {
+    commonAfter.label = "공통";
+    commonAfter.blurb = "어느 안을 골라도 같이 하는 일정";
+  }
+
+  return {
+    commonBefore,
+    commonAfter,
+    plan1,
+    plan2,
+    hasPlans: plan1.activities.length > 0 || plan2.activities.length > 0,
+  };
 }
 
 const moodEmoji: Record<string, string> = {
@@ -54,6 +187,85 @@ const moodEmoji: Record<string, string> = {
       days.map((d) => {
         const lodging = lodgingById(trip, d.lodgingId);
         const emoji = (d.mood && moodEmoji[d.mood]) || "📅";
+        const { commonBefore, commonAfter, plan1, plan2, hasPlans } =
+          splitPlans(d.activities);
+        const planBuckets = [plan1, plan2].filter((b) => b.activities.length > 0);
+        const plainCommon = [...commonBefore.activities, ...commonAfter.activities];
+
+        function renderActivityList(
+          items: Array<Activity & { displayTitle: string }>,
+          tone: PlanBucket["tone"],
+          compact: boolean,
+        ) {
+          return (
+            <ul
+              class:list={[
+                "relative space-y-0 border-l-2",
+                tone.rail,
+                compact ? "px-3 py-3 pl-7" : "pl-4",
+              ]}
+            >
+              {items.map((a) => {
+                const who = peopleLabel(a.peopleIds);
+                return (
+                  <li class:list={["relative", compact ? "pb-3" : "pb-4", "last:pb-0"]}>
+                    <span
+                      class:list={[
+                        "absolute top-1.5 size-2.5 rounded-full ring-4 ring-white",
+                        compact ? "-left-[1.05rem]" : "-left-[1.3rem]",
+                        tone.dot,
+                      ]}
+                    />
+                    <div class="flex gap-3 text-sm">
+                      <span
+                        class:list={[
+                          "w-12 shrink-0 tabular-nums font-bold",
+                          tone.time,
+                        ]}
+                      >
+                        {a.time ?? "—"}
+                      </span>
+                      <div class="min-w-0">
+                        <p class="font-semibold text-ink">{a.displayTitle}</p>
+                        {a.place && (
+                          <p class="mt-0.5 flex items-center gap-1 text-muted">
+                            <Icon name="mapPin" class="size-3.5 shrink-0" />
+                            {a.place}
+                          </p>
+                        )}
+                        {a.notes && <p class="mt-0.5 text-muted">{a.notes}</p>}
+                        {who && (
+                          <p class="mt-1 text-xs font-medium text-violet-700">
+                            👥 {who}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          );
+        }
+
+        function renderBucket(bucket: PlanBucket) {
+          if (bucket.activities.length === 0) return null;
+          return (
+            <section
+              class={`overflow-hidden rounded-xl border ${bucket.tone.wrap}`}
+              aria-label={bucket.label}
+            >
+              <header
+                class={`border-b border-black/5 px-3 py-2.5 ${bucket.tone.head}`}
+              >
+                <p class="text-sm font-bold">{bucket.label}</p>
+                <p class="text-xs opacity-80">{bucket.blurb}</p>
+              </header>
+              {renderActivityList(bucket.activities, bucket.tone, true)}
+            </section>
+          );
+        }
+
         return (
           <li
             id={`day-${d.date}`}
@@ -76,9 +288,7 @@ const moodEmoji: Record<string, string> = {
             </div>
 
             <div class="space-y-3 p-4">
-              {d.summary && (
-                <p class="text-sm text-muted">{d.summary}</p>
-              )}
+              {d.summary && <p class="text-sm text-muted">{d.summary}</p>}
               {lodging && (
                 <a
                   href={`#lodging-${lodging.id}`}
@@ -88,40 +298,33 @@ const moodEmoji: Record<string, string> = {
                   <span class="truncate">{lodging.name}</span>
                 </a>
               )}
-              {d.activities.length > 0 && (
-                <ul class="relative space-y-0 border-l-2 border-sky-200 pl-4">
-                  {d.activities.map((a) => {
-                    const who = peopleLabel(a.peopleIds);
-                    return (
-                      <li class="relative pb-4 last:pb-0">
-                        <span class="absolute -left-[1.3rem] top-1.5 size-2.5 rounded-full bg-sky-500 ring-4 ring-white" />
-                        <div class="flex gap-3 text-sm">
-                          <span class="w-12 shrink-0 tabular-nums font-bold text-sky-700">
-                            {a.time ?? "—"}
-                          </span>
-                          <div class="min-w-0">
-                            <p class="font-semibold text-ink">{a.title}</p>
-                            {a.place && (
-                              <p class="mt-0.5 flex items-center gap-1 text-muted">
-                                <Icon name="mapPin" class="size-3.5 shrink-0" />
-                                {a.place}
-                              </p>
-                            )}
-                            {a.notes && (
-                              <p class="mt-0.5 text-muted">{a.notes}</p>
-                            )}
-                            {who && (
-                              <p class="mt-1 text-xs font-medium text-violet-700">
-                                👥 {who}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
+
+              {/* No plan split: plain single timeline */}
+              {!hasPlans && plainCommon.length > 0 &&
+                renderActivityList(plainCommon, commonTone, false)}
+
+              {/* Split view: common → pick one plan → common after */}
+              {hasPlans && (
+                <div class="space-y-3">
+                  {renderBucket(commonBefore)}
+
+                  <p class="text-center text-xs font-semibold tracking-wide text-muted">
+                    아래 중 <span class="text-ink">하루 한 코스만</span> 선택
+                  </p>
+
+                  <div
+                    class:list={[
+                      "grid gap-3",
+                      planBuckets.length > 1 && "md:grid-cols-2",
+                    ]}
+                  >
+                    {planBuckets.map((bucket) => renderBucket(bucket))}
+                  </div>
+
+                  {renderBucket(commonAfter)}
+                </div>
               )}
+
               {d.body?.trim() && (
                 <div class="rounded-xl bg-slate-50 px-3 py-2.5 text-sm leading-relaxed text-muted">
                   {d.body
