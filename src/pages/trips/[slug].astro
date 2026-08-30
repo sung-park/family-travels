@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import Collapsible from "../../components/Collapsible.astro";
 import DayTimeline from "../../components/DayTimeline.astro";
 import Icon from "../../components/Icon.astro";
 import LodgingCard from "../../components/LodgingCard.astro";
@@ -127,15 +128,15 @@ const description =
 
     <TripMap trip={trip} />
 
-    <section class="space-y-3" aria-labelledby="sec-people">
-      <SectionTitle
-        id="sec-people"
-        icon="users"
-        title="함께하는 가족"
-        tone="violet"
-      />
+    <Collapsible
+      id="sec-people"
+      icon="users"
+      tone="violet"
+      label="함께하는 가족"
+      hint={`${people.length}명`}
+    >
       <ParticipantChips people={people} focusPersonId={trip.focusPersonId} />
-    </section>
+    </Collapsible>
 
     {
       trip.lodgings.length > 0 && (
@@ -184,8 +185,13 @@ const description =
 
     {
       trip.packing.length > 0 && (
-        <section class="space-y-3" aria-labelledby="sec-pack">
-          <SectionTitle id="sec-pack" icon="bag" title="준비물" tone="coral" />
+        <Collapsible
+          id="sec-pack"
+          icon="bag"
+          tone="coral"
+          label="준비물"
+          hint={`${trip.packing.length}개`}
+        >
           <ul class="grid gap-2">
             {trip.packing.map((p) => (
               <li class="flex items-start gap-2 rounded-xl border border-border bg-surface px-3 py-2.5 text-sm shadow-sm">
@@ -203,52 +209,70 @@ const description =
               </li>
             ))}
           </ul>
-        </section>
+        </Collapsible>
       )
     }
 
+    {/* Emergency numbers must never be one tap away — only the rest folds. */}
     {
       (emergency.length > 0 || otherLinks.length > 0) && (
         <section class="space-y-3" aria-labelledby="sec-links">
           <SectionTitle id="sec-links" icon="link" title="링크" tone="sky" />
-          <ul class="space-y-2">
-            {emergency.map((l) => (
-              <li>
-                <a
-                  href={l.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="flex min-h-12 items-center gap-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-900 no-underline"
-                >
-                  <span class="text-lg" aria-hidden="true">
-                    🚨
-                  </span>
-                  {l.label}
-                </a>
-              </li>
-            ))}
-            {otherLinks.map((l) => (
-              <li>
-                <a
-                  href={l.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="flex min-h-11 items-center gap-3 rounded-xl border border-border bg-surface px-3 py-2 text-sm font-medium text-brand-800 no-underline shadow-sm"
-                >
-                  <Icon name="link" class="size-4 shrink-0" />
-                  {l.label}
-                </a>
-              </li>
-            ))}
-          </ul>
+          {emergency.length > 0 && (
+            <ul class="space-y-2">
+              {emergency.map((l) => (
+                <li>
+                  <a
+                    href={l.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="flex min-h-12 items-center gap-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-900 no-underline"
+                  >
+                    <span class="text-lg" aria-hidden="true">
+                      🚨
+                    </span>
+                    {l.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+          {otherLinks.length > 0 && (
+            <Collapsible
+              variant="panel"
+              label="참고 링크"
+              hint={`${otherLinks.length}개`}
+            >
+              <ul class="space-y-2">
+                {otherLinks.map((l) => (
+                  <li>
+                    <a
+                      href={l.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="flex min-h-11 items-center gap-3 rounded-xl border border-border bg-surface px-3 py-2 text-sm font-medium text-brand-800 no-underline shadow-sm"
+                    >
+                      <Icon name="link" class="size-4 shrink-0" />
+                      {l.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </Collapsible>
+          )}
         </section>
       )
     }
 
     {
       trip.notesPublic.length > 0 && (
-        <section class="space-y-3" aria-labelledby="sec-notes">
-          <SectionTitle id="sec-notes" icon="note" title="메모" tone="sand" />
+        <Collapsible
+          id="sec-notes"
+          icon="note"
+          tone="sand"
+          label="메모"
+          hint={`${trip.notesPublic.length}개`}
+        >
           <ul class="space-y-2">
             {trip.notesPublic.map((n) => (
               <li class="flex gap-2 rounded-xl bg-amber-50 px-3 py-2.5 text-sm text-ink">
@@ -267,20 +291,25 @@ const description =
               </li>
             ))}
           </ul>
-        </section>
+        </Collapsible>
       )
     }
 
     {
       body?.trim() && (
-        <section class="rounded-2xl border border-border bg-surface p-4 text-sm leading-relaxed text-muted shadow-sm">
+        <Collapsible
+          icon="info"
+          tone="mint"
+          label="이 여행 소개"
+          class="p-4 text-sm leading-relaxed text-muted"
+        >
           {body
             .trim()
             .split(/\n+/)
             .map((para) => (
               <p class="mb-2 last:mb-0">{para}</p>
             ))}
-        </section>
+        </Collapsible>
       )
     }
 

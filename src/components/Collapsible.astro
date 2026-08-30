@@ -1,0 +1,125 @@
+---
+/**
+ * Collapsible block built on native <details>. Works without JS.
+ *
+ * Mobile is the primary reader here: only the headline stays on screen and the
+ * detail lives one tap away, so the page never turns into an endless scroll.
+ *
+ * variant="section" — page-level section with an icon badge + heading.
+ * variant="panel"   — smaller in-card disclosure (e.g. hotel booking notes).
+ *
+ * BaseLayout ships the script that re-opens whatever an in-page anchor points
+ * at, so the quick-jump chips keep working even when the target is collapsed.
+ */
+import Icon from "./Icon.astro";
+import type { ComponentProps } from "astro/types";
+
+type IconName = ComponentProps<typeof Icon>["name"];
+
+interface Props {
+  /** id for the heading — quick-jump anchors target this. */
+  id?: string;
+  label: string;
+  /** Short right-aligned note: item count, "3곳", "예약 상세" … */
+  hint?: string;
+  icon?: IconName;
+  tone?: "sky" | "sand" | "mint" | "coral" | "violet";
+  variant?: "section" | "panel";
+  open?: boolean;
+  /** Extra classes on the content wrapper. */
+  class?: string;
+}
+
+const {
+  id,
+  label,
+  hint,
+  icon,
+  tone = "sky",
+  variant = "section",
+  open = false,
+  class: contentClass,
+} = Astro.props;
+
+const tones: Record<string, string> = {
+  sky: "bg-sky-100 text-sky-700",
+  sand: "bg-amber-100 text-amber-800",
+  mint: "bg-emerald-100 text-emerald-800",
+  coral: "bg-rose-100 text-rose-700",
+  violet: "bg-violet-100 text-violet-800",
+};
+
+const isSection = variant === "section";
+---
+
+<details
+  class:list={[
+    "disclosure group",
+    isSection
+      ? "overflow-hidden rounded-2xl border border-border bg-surface shadow-sm"
+      : "overflow-hidden rounded-xl border border-border bg-slate-50/70",
+  ]}
+  data-open-on-target
+  open={open}
+>
+  <summary
+    class:list={[
+      "flex cursor-pointer items-center gap-2.5 select-none",
+      isSection
+        ? "min-h-14 px-4 py-3 hover:bg-brand-50/60"
+        : "min-h-11 px-3 py-2.5 text-sm hover:bg-slate-100",
+    ]}
+  >
+    {
+      isSection && icon && (
+        <span
+          class:list={[
+            "inline-flex size-9 shrink-0 items-center justify-center rounded-xl",
+            tones[tone],
+          ]}
+          aria-hidden="true"
+        >
+          <Icon name={icon} class="size-5" />
+        </span>
+      )
+    }
+    {
+      isSection ? (
+        /* scroll-mt keeps the heading clear of the sticky page header */
+        <h2
+          id={id}
+          class="min-w-0 flex-1 scroll-mt-24 text-lg font-semibold text-ink"
+        >
+          {label}
+        </h2>
+      ) : (
+        <span id={id} class="min-w-0 flex-1 scroll-mt-24 font-semibold text-ink">
+          {label}
+        </span>
+      )
+    }
+    {
+      hint && (
+        <span class="shrink-0 text-xs font-medium text-muted">{hint}</span>
+      )
+    }
+    <span
+      class:list={[
+        "flex shrink-0 items-center justify-center rounded-full text-muted transition-transform duration-200 group-open:rotate-180",
+        isSection ? "size-7 bg-slate-100" : "size-6 bg-white",
+      ]}
+      aria-hidden="true"
+    >
+      <Icon name="chevronDown" class="size-4" />
+    </span>
+  </summary>
+
+  <div
+    class:list={[
+      "disclosure-body border-t border-border",
+      contentClass ?? (isSection ? "p-4" : "px-3 py-2.5"),
+    ]}
+  >
+    <slot />
+  </div>
+</details>

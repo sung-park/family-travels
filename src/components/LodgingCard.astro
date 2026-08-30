@@ -3,6 +3,7 @@ import { formatDateKo } from "../lib/dates";
 import { splitFreeCancelHighlight } from "../lib/highlight";
 import type { Lodging } from "../lib/schemas";
 import { withBase } from "../lib/paths";
+import Collapsible from "./Collapsible.astro";
 import Icon from "./Icon.astro";
 
 interface Props {
@@ -23,6 +24,15 @@ const coverSrc = lodging.coverImage
     ? lodging.coverImage
     : withBase(lodging.coverImage.replace(/^\//, ""))
   : null;
+
+const noteLines = (lodging.notesPublic ?? "")
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+
+// Cancellation deadlines stay on screen; the rest of the small print folds away.
+const cancelLines = noteLines.filter((line) => /무료\s*취소/.test(line));
+const detailLines = noteLines.filter((line) => !/무료\s*취소/.test(line));
 
 const fallbackGrad =
   index === 0
@@ -138,26 +148,37 @@ const fallbackGrad =
       </div>
     </div>
     {
-      lodging.notesPublic && (
-        <div class="space-y-1.5 rounded-xl bg-slate-50 px-3 py-2.5 text-sm leading-relaxed text-ink">
-          {lodging.notesPublic
-            .split("\n")
-            .map((line) => line.trim())
-            .filter(Boolean)
-            .map((line) => (
-              <p>
-                {splitFreeCancelHighlight(line).map((part) =>
-                  part.highlight ? (
-                    <span class="font-bold text-red-600 underline decoration-2 underline-offset-2 decoration-red-600">
-                      {part.text}
-                    </span>
-                  ) : (
-                    part.text
-                  ),
-                )}
-              </p>
-            ))}
-        </div>
+      cancelLines.map((line) => (
+        <p class="rounded-xl bg-rose-50 px-3 py-2 text-sm leading-relaxed text-ink">
+          {splitFreeCancelHighlight(line).map((part) =>
+            part.highlight ? (
+              <span class="font-bold text-red-600 underline decoration-2 underline-offset-2 decoration-red-600">
+                {part.text}
+              </span>
+            ) : (
+              part.text
+            ),
+          )}
+        </p>
+      ))
+    }
+    {/*
+      The rest of the booking small print (rates, inclusions, shuttle times)
+      is long. Folded away — the room, the dates and the cancellation deadline
+      are what people actually check on a phone.
+    */}
+    {
+      detailLines.length > 0 && (
+        <Collapsible
+          variant="panel"
+          label="예약 상세 보기"
+          hint={`${detailLines.length}줄`}
+          class="space-y-1.5 bg-white px-3 py-2.5 text-sm leading-relaxed text-ink"
+        >
+          {detailLines.map((line) => (
+            <p>{line}</p>
+          ))}
+        </Collapsible>
       )
     }
     {

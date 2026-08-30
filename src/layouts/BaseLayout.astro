@@ -79,5 +79,59 @@ const aboutHref = withBase("about/");
         </p>
       </div>
     </footer>
+
+    <script>
+      /**
+       * Anchors (#sec-days, #day-2026-09-05, #lodging-…) can point inside a
+       * collapsed <details>. Open everything on the way to the target — plus
+       * the target's own block when it is marked [data-open-on-target] — then
+       * re-scroll, because expanding shifts the layout under the browser's
+       * first jump.
+       */
+      function revealTarget(hash: string, scroll: boolean) {
+        const id = decodeURIComponent(hash.replace(/^#/, ""));
+        if (!id) return;
+        const target = document.getElementById(id);
+        if (!target) return;
+
+        for (
+          let node: HTMLElement | null = target;
+          node;
+          node = node.parentElement
+        ) {
+          if (node instanceof HTMLDetailsElement) node.open = true;
+        }
+        if (target instanceof HTMLDetailsElement) target.open = true;
+        target
+          .querySelectorAll<HTMLDetailsElement>(
+            ":scope > details[data-open-on-target]",
+          )
+          .forEach((d) => {
+            d.open = true;
+          });
+
+        if (!scroll) return;
+        requestAnimationFrame(() => {
+          target.scrollIntoView({ block: "start", behavior: "smooth" });
+        });
+      }
+
+      document.addEventListener("click", (e) => {
+        const link = (
+          e.target as HTMLElement | null
+        )?.closest<HTMLAnchorElement>('a[href^="#"]');
+        if (!link) return;
+        const hash = link.getAttribute("href") ?? "";
+        if (hash.length < 2) return;
+        // Open before the browser jumps, so it lands on the expanded layout.
+        revealTarget(hash, false);
+      });
+
+      window.addEventListener("hashchange", () =>
+        revealTarget(location.hash, true),
+      );
+
+      if (location.hash) revealTarget(location.hash, true);
+    </script>
   </body>
 </html>

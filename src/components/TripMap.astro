@@ -4,7 +4,7 @@
  * Leaflet + OSM (no API key). Client-only init.
  */
 import type { TripData } from "../lib/schemas";
-import SectionTitle from "./SectionTitle.astro";
+import Collapsible from "./Collapsible.astro";
 import Icon from "./Icon.astro";
 import { formatDateKo } from "../lib/dates";
 
@@ -87,9 +87,14 @@ const mapPayload = { points, routeLatLngs };
 
 {
   canRender && (
-    <section class="space-y-3" aria-labelledby="sec-map">
-      <SectionTitle id="sec-map" icon="mapPin" title="동선 지도" tone="coral" />
-
+    <Collapsible
+      id="sec-map"
+      icon="mapPin"
+      tone="coral"
+      label="동선 지도"
+      hint={`공항 · 숙소 ${hotels.length}곳`}
+      class="space-y-3 p-4"
+    >
       <div class="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
         <div
           id="trip-route-map"
@@ -155,7 +160,7 @@ const mapPayload = { points, routeLatLngs };
         지도: OpenStreetMap · 위치는 공개 좌표 기준 대략값입니다. 내비는 각 숙소
         「지도 보기」를 이용하세요.
       </p>
-    </section>
+    </Collapsible>
   )
 }
 
@@ -304,9 +309,25 @@ const mapPayload = { points, routeLatLngs };
     }
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => void initMap());
-  } else {
+  /**
+   * The map lives inside a collapsed <details>, so Leaflet must wait: a hidden
+   * container measures 0px and the tiles would lay out wrong. Load on first
+   * open — which also keeps the library off the wire for readers who never
+   * open the map.
+   */
+  function start() {
+    const el = document.getElementById("trip-route-map");
+    const box = el?.closest("details");
+    if (box && !box.open) {
+      box.addEventListener("toggle", () => void initMap(), { once: true });
+      return;
+    }
     void initMap();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", start);
+  } else {
+    start();
   }
 </script>
