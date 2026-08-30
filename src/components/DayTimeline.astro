@@ -1,5 +1,6 @@
 ---
 import { formatDateKo, todayInTimeZone } from "../lib/dates";
+import { splitBold } from "../lib/highlight";
 import type { DayData, Lodging, Person, TripData } from "../lib/schemas";
 import { lodgingById } from "../lib/trip";
 import ActivityList from "./ActivityList.astro";
@@ -393,7 +394,17 @@ const dayViews: DayView[] = days.map((d) => {
                   .trim()
                   .split(/\n+/)
                   .map((para) => (
-                    <p class="mb-1.5 last:mb-0">{para}</p>
+                    <p class="mb-1.5 last:mb-0">
+                      {splitBold(para).map((part) =>
+                        part.highlight ? (
+                          <strong class="font-semibold text-ink">
+                            {part.text}
+                          </strong>
+                        ) : (
+                          part.text
+                        ),
+                      )}
+                    </p>
                   ))}
               </div>
             )}

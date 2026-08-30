@@ -15,7 +15,7 @@ import {
   phaseLabelKo,
   todayInTimeZone,
 } from "../../lib/dates";
-import { splitFreeCancelHighlight } from "../../lib/highlight";
+import { splitBold, splitFreeCancelHighlight } from "../../lib/highlight";
 import { getPeopleMap } from "../../lib/people";
 import { getAllTripBundles, getTripBundle } from "../../lib/trip";
 
@@ -307,7 +307,15 @@ const description =
             .trim()
             .split(/\n+/)
             .map((para) => (
-              <p class="mb-2 last:mb-0">{para}</p>
+              <p class="mb-2 last:mb-0">
+                {splitBold(para).map((part) =>
+                  part.highlight ? (
+                    <strong class="font-semibold text-ink">{part.text}</strong>
+                  ) : (
+                    part.text
+                  ),
+                )}
+              </p>
             ))}
         </Collapsible>
       )
