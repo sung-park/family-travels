@@ -1,0 +1,322 @@
+---
+import BaseHead from "../../../components/BaseHead.astro";
+import Icon from "../../../components/Icon.astro";
+import { formatDateRangeKo } from "../../../lib/dates";
+import { withBase } from "../../../lib/paths";
+import { getPeopleMap } from "../../../lib/people";
+import { buildSimpleSchedule } from "../../../lib/simple-schedule";
+import { getAllTripBundles, getTripBundle } from "../../../lib/trip";
+import "../../../styles/global.css";
+
+export async function getStaticPaths() {
+  const bundles = await getAllTripBundles();
+  return bundles.map((b) => ({
+    params: { slug: b.slug },
+  }));
+}
+
+const { slug } = Astro.params;
+if (!slug) throw new Error("missing slug");
+
+const bundle = await getTripBundle(slug);
+if (!bundle) {
+  return Astro.redirect("../../../");
+}
+
+const { trip, days } = bundle;
+const peopleById = getPeopleMap();
+const { days: simpleDays, flights } = buildSimpleSchedule(
+  trip,
+  days,
+  peopleById,
+);
+const dateRange = formatDateRangeKo(trip.startDate, trip.endDate);
+const tripHref = withBase(`trips/${slug}/`);
+const peopleLine = bundle.people.map((p) => p.nameShort).join(" · ");
+---
+
+<!doctype html>
+<html lang="ko">
+  <head>
+    <BaseHead
+      title={`${trip.titleShort ?? trip.title} · 간단 시간표`}
+      description={`${trip.title} 부모님용 한 장 일정. ${dateRange}.`}
+      path={`/trips/${slug}/print/`}
+    />
+  </head>
+  <body class="print-page bg-canvas text-ink antialiased">
+    <div class="no-print mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
+      <a
+        href={tripHref}
+        class="inline-flex min-h-11 items-center gap-1.5 rounded-xl px-3 text-sm font-medium text-ink no-underline hover:bg-brand-50"
+      >
+        ← 자세한 일정
+      </a>
+      <button
+        type="button"
+        class="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-brand-700 px-4 text-sm font-semibold text-white"
+        data-print
+      >
+        <Icon name="printer" class="size-4" />
+        인쇄
+      </button>
+    </div>
+
+    <article class="sheet mx-auto bg-white shadow-md">
+      <header class="sheet-head">
+        <p class="kicker">부모님용 · 한 장 시간표</p>
+        <h1>{trip.title}</h1>
+        <p class="meta">{dateRange} · {trip.destination.cityKo}</p>
+        <p class="people">{peopleLine}</p>
+        {
+          flights.length > 0 && (
+            <ul class="flights">
+              {flights.map((f) => (
+                <li>
+                  <strong>{f.label}</strong>
+                  {f.when} · {f.route}
+                </li>
+              ))}
+            </ul>
+          )
+        }
+      </header>
+
+      <table class="grid-table">
+        <thead>
+          <tr>
+            <th class="col-day">날짜</th>
+            <th>아침</th>
+            <th>낮</th>
+            <th>저녁</th>
+            <th class="col-sleep">잠</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            simpleDays.map((d) => (
+              <tr>
+                <th scope="row" class="col-day">
+                  <span class="md">{d.md}</span>
+                  <span class="wd">({d.weekday})</span>
+                  <span class="hl">{d.headline}</span>
+                </th>
+                <td>
+                  {d.morning.length ? (
+                    <ul>
+                      {d.morning.map((l) => (
+                        <li>
+                          {l.time && <span class="tm">{l.time}</span>}
+                          {l.text}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <span class="empty">휴식</span>
+                  )}
+                </td>
+                <td>
+                  {d.afternoon.length ? (
+                    <ul>
+                      {d.afternoon.map((l) => (
+                        <li>
+                          {l.time && <span class="tm">{l.time}</span>}
+                          {l.text}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <span class="empty">휴식</span>
+                  )}
+                </td>
+                <td>
+                  {d.evening.length ? (
+                    <ul>
+                      {d.evening.map((l) => (
+                        <li>
+                          {l.time && <span class="tm">{l.time}</span>}
+                          {l.text}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <span class="empty">휴식</span>
+                  )}
+                </td>
+                <td class="col-sleep">{d.lodging}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+
+      <footer class="sheet-foot">
+        <p>2안(오후 입장·쇼핑 등)은 빼고 기본 동선만 적었습니다. 자세한 메모는 가족 여행 사이트를 보세요.</p>
+        <p>응급 113 · 의료 115 · 호텔 프론트에 먼저 연락</p>
+      </footer>
+    </article>
+
+    <script>
+      document.querySelector("[data-print]")?.addEventListener("click", () => {
+        window.print();
+      });
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  .print-page {
+    font-family: "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+    word-break: keep-all;
+  }
+
+  .sheet {
+    width: 210mm;
+    min-height: 297mm;
+    max-width: 100%;
+    padding: 10mm 11mm 9mm;
+    box-sizing: border-box;
+  }
+
+  .sheet-head {
+    margin-bottom: 8px;
+  }
+
+  .sheet-head h1 {
+    margin: 0;
+    font-size: 20px;
+    letter-spacing: -0.02em;
+  }
+
+  .kicker {
+    margin: 0 0 2px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #0369a1;
+  }
+
+  .meta,
+  .people,
+  .flights {
+    margin: 2px 0 0;
+    font-size: 12px;
+    color: #334155;
+  }
+
+  .flights {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 14px;
+    padding: 0;
+    list-style: none;
+  }
+
+  .grid-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .grid-table th,
+  .grid-table td {
+    border: 1px solid #cbd5e1;
+    padding: 5px 6px;
+    vertical-align: top;
+  }
+
+  .grid-table thead th {
+    background: #e0f2fe;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .col-day {
+    width: 18%;
+    background: #f8fafc;
+    text-align: left;
+  }
+
+  .col-sleep {
+    width: 13%;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  tbody .col-day .md {
+    display: block;
+    font-size: 15px;
+    font-weight: 800;
+  }
+
+  tbody .col-day .wd {
+    font-weight: 700;
+    color: #0369a1;
+  }
+
+  tbody .col-day .hl {
+    display: block;
+    margin-top: 2px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #475569;
+  }
+
+  .grid-table td ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .grid-table td li + li {
+    margin-top: 3px;
+  }
+
+  .tm {
+    display: inline-block;
+    min-width: 2.6em;
+    margin-right: 2px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    color: #0369a1;
+  }
+
+  .empty {
+    color: #94a3b8;
+  }
+
+  .sheet-foot {
+    margin-top: 8px;
+    font-size: 11px;
+    color: #64748b;
+  }
+
+  .sheet-foot p {
+    margin: 0 0 2px;
+  }
+
+  @media print {
+    @page {
+      size: A4 portrait;
+      margin: 8mm;
+    }
+
+    html,
+    body {
+      background: #fff !important;
+    }
+
+    .no-print {
+      display: none !important;
+    }
+
+    .sheet {
+      width: auto;
+      min-height: 0;
+      padding: 0;
+      box-shadow: none;
+    }
+  }
+</style>

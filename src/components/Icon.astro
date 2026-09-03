@@ -23,7 +23,8 @@ type IconName =
   | "checkOut"
   | "baby"
   | "grandparent"
-  | "adult";
+  | "adult"
+  | "printer";
 
 interface Props {
   name: IconName;
@@ -193,6 +194,14 @@ const cls = className;
     <svg class={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <circle cx="12" cy="7" r="3.5" />
       <path d="M5 21v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1" />
+    </svg>
+  )
+}
+{
+  name === "printer" && (
+    <svg class={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+      <rect x="6" y="14" width="12" height="8" rx="1" />
     </svg>
   )
 }

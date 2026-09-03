@@ -16,6 +16,7 @@ import {
   todayInTimeZone,
 } from "../../lib/dates";
 import { splitBold, splitFreeCancelHighlight } from "../../lib/highlight";
+import { withBase } from "../../lib/paths";
 import { getPeopleMap } from "../../lib/people";
 import { getAllTripBundles, getTripBundle } from "../../lib/trip";
 
@@ -44,6 +45,7 @@ const otherLinks = trip.links.filter((l) => l.kind !== "emergency");
 const description =
   trip.summary?.split("\n")[0]?.trim() ||
   `${trip.title} · ${dateRange} · ${trip.destination.cityKo}`;
+const printHref = withBase(`trips/${slug}/print/`);
 ---
 
 <BaseLayout
@@ -112,6 +114,11 @@ const description =
           { href: "#sec-transport", icon: "plane" as const, label: "항공" },
           { href: "#sec-days", icon: "calendar" as const, label: "일정" },
           { href: "#sec-pack", icon: "bag" as const, label: "짐" },
+          {
+            href: printHref,
+            icon: "printer" as const,
+            label: "간단 인쇄",
+          },
         ].map((item) => (
           <a
             href={item.href}
@@ -172,12 +179,21 @@ const description =
     {
       days.length > 0 && (
         <section class="space-y-3" aria-labelledby="sec-days">
-          <SectionTitle
-            id="sec-days"
-            icon="calendar"
-            title="일별 일정"
-            tone="sand"
-          />
+          <div class="flex flex-wrap items-end justify-between gap-2">
+            <SectionTitle
+              id="sec-days"
+              icon="calendar"
+              title="일별 일정"
+              tone="sand"
+            />
+            <a
+              href={printHref}
+              class="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-border bg-surface px-3.5 text-sm font-medium text-ink no-underline shadow-sm hover:border-brand-600 hover:bg-brand-50"
+            >
+              <Icon name="printer" class="size-4 text-brand-700" />
+              부모님용 한 장
+            </a>
+          </div>
           <DayTimeline days={days} trip={trip} peopleById={peopleById} />
         </section>
       )
